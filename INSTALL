@@ -1,0 +1,31 @@
+
+Installation
+------------
+
+1. Put this directory into your web directory.
+
+2. omegabb.sql is a dump of a MySQL database.  Create a database and import this file.
+After import, the following tables should exist: file, log, post, session, thread, user.
+
+3. At the start of config.php change the following lines to whatever your database configuration is
+
+$settings->server='localhost';  
+$settings->database='name of database';
+$settings->user='database username';
+$settings->pass='database password';
+
+---
+
+In the default installation, the account named "admin" has administrator status (status = 5).  
+The password is "pass000".  Sign in as admin and click on the Settings button to change your password, 
+and click on the Admin button to adjust the site configuration.
+
+This installation comes with some example postings, to clean them out do the following
+-delete the files in ./files (but leave the tmp directory and .htaccess)
+-in the database, delete all entries in the tables "post", "thread" and "file"
+
+You may delete the example user accounts, but do not delete "System".
+
+If you'd like users to connect using Facebook, see README.facebook
+If you'd like users to connect using LinkedIn, see README.linkedin
+To translate the system messages into another language, see lang/README.languages

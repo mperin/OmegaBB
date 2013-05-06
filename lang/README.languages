@@ -1,0 +1,7 @@
+To make your own translation.
+
+1. Make a copy of language.fr.php and language.fr.js and rename "fr" to your language.  ex: "language.es.js"
+2. Fill out the two files, replacing "text here" with the translation.
+3. Sign in as an administrator and change the language setting from the Admin page
+
+Make sure there's no whitespace at the bottom of language.*.php

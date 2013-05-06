@@ -1,0 +1,6 @@
+To allow users to connect using Facebook:
+
+- Register an app at Facebook. https://developers.facebook.com/apps/  Enter your domain name, 
+    under "Select how your app integrates with Facebook" choose Website and enter the URL
+- You'll be given a Facebook App ID and secret.  As admin, go to your site settings and set
+  "fb_appId" and "fb_secret", also set "connect_with_fb to true, and set "website_url"

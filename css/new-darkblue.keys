@@ -1,0 +1,25 @@
+%%text_color1%%:#FFFFFF //forum titles, text color of a thread 
+%%background_color1%%:#ECEFF5
+%%text_color2%%:#FFFFFF //top bar, text color of username, thread titles in forums, and selecte thread title  
+%%color1%%:#144582 //tab that's not been selected  
+%%color2%%:#103767 //background of forums, beneath thread, selected tab  
+%%color3%%:#002053 //background of thread  
+%%color4%%:#FFFFFF //user number in post
+%%color5%%:#002053 //old 144582 side panel
+%%color6%%:#999999
+%%color7%%:#BBBBBB
+%%color8%%:#FFC
+%%color9%%:#CCCCCC
+%%color10%%:#FFFFFF //scroll triangles  
+%%color11%%:#6D84B4
+%%color12%%:#144582 //bar at very top
+%%color13%%:yellow //text color of Settings, Users, Profile, Logout
+%%body_font%%:'lucida grande','lucida sans unicode',verdana,tahoma,sans-serif
+%%post_font%%:verdana,arial,helvetica,sans-serif
+%%scroll_color%%:#FFFFFF
+%%scroll_hover_color%%:yellow
+%%title_color%%:yellow
+%%forum_title_color%%:yellow
+%%back_tab_color%%:#144582
+%%input_box_color%%:#144582
+%%color14%%:#103767

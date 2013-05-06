@@ -1,0 +1,148 @@
+
+OmegaBB 0.9.2 (build 215)
+====================================
+
+OmegaBB is a message board which features a fast interface, real-time notification when
+a watched thread gets a new message, public and private threads, wiki articles and more.  
+
+Webpage: http://www.omegabb.com
+
+See the file INSTALL on how to get OmegaBB running on your server.
+
+Changes in version 0.9.2 (Feb 12, 2013)
+
+- configuration for site layout improved
+- new cron tasks: prune_session_table, prune_closed_threads
+- "Check for updates" button on Admin page
+- more configuration options
+
+Changes in version 0.9.1 (Dec 13, 2012)
+
+- Connect With LinkedIn login option
+- site settings configurable from the Admin page
+- less server-side memory usage 
+- lockdown button for moderators
+- more configuration options
+
+Changes in version 0.9 (July 18, 2012)
+
+- file attachments
+- more Facebook integration options
+- moderation: timed bannings, auto-detect duplicate accounts, mute and ban were seperated 
+into two seperate actions
+- admin ability: wipe user account + remove all their content
+- log viewer for moderators
+- user may block specified users from sending them private threads
+- user setting: auto-watch all new threads
+- may set a vertical space for banner ads or extra branding
+- may auto-close old or inactive threads
+- more configuration options
+
+Changes in version 0.8.2 (Feb 10, 2012)
+
+- Connect With Facebook login option
+- side panel becomes horizontal at narrow resolutions
+- profile displays "last online", and you may hide your online status
+- more configuration options
+
+Changes in version 0.8.1 (Oct 11, 2011)
+
+- ability to edit posts
+- quotations
+- facilities for internationalization
+- may allow web search bots to index the content of the site
+- articles/wiki system
+- rich text support: [b],[i],[u]
+- word filter
+- moderator is able to kick a user out of a private thread
+- config options better organized, options for what users of different status levels are allowed to do 
+    (ex: must have minimum status of 1 to embed youtube)
+- help menu 
+- off-site images, [IMG][/IMG], are thumbnailed and expandable
+- anonymous posting was removed
+- product renamed from Mifter to OmegaBB
+
+Changes in version 0.7 (Jan 9, 2011)
+
+- customization: number of forums per tab and width of each forum
+- protection from flood posts
+- sticky threads
+
+Changes in version 0.6.1 (Nov 10, 2010)
+
+-captchas
+-ability to see who's online
+-more configuration options
+-site looks better at narrower screen resolutions
+
+Changes in version 0.6 (Sep 27, 2010)
+
+-moderation (delete post, ban user, close thread, etc)
+-configuration file to allow for more customization
+-posts can contain inline content from other sites, [YOUTUBE][/YOUTUBE] and [IMG][/IMG]
+-user list
+-user may block specified users from posting in their threads
+-emotes, entering :lol: turns it into an image
+
+Changes in version 0.5.1
+
+-width of message area increased to roughly 80 characters
+-clarified installation notes
+
+Changes in version 0.5 (May 15, 2010)
+
+-private threads: for IM or private group discussion  
+-profile: join date, total posts, text area, send message 
+-set nrt when updater appends to a thread you're watching
+-keep up and down arrows aligned
+-new background colour for textarea, so highlighting text is visible
+
+Changes in version 0.4 (Apr 6, 2010)
+
+-update session activity every 5 minutes
+-remember name and password
+-"remember me" functionality (permalink shouldn't log you out, hitting reload should keep you logged in)
+-welcome thread that all new users are watching
+-update is more aggressive in trying to keep you logged in after a failed attempt, only logs you out if auth returns 0
+-"watch thread" and "unwatch thread" buttons
+-ability to change password
+-Content and Menu divs expand to cover bottom of page
+-attach multiple images to one post 
+
+Changes in version 0.3  
+
+-update() gives thread deltas only
+-Forum B & C
+-thread scrolling
+-removed session expiration, don't delete old sessions, overwrite a user's old session when they log back in
+-text in posts get exactly 72 characters per line
+-more themes
+-moved message_center to a floating side bar
+-working with latest IE
+
+
+License:
+
+OmegaBB 0.9.2 (build 215)  Copyright (c) 2013, Ryan Smiderle.  All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted
+provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above product name, version number, 
+	copyright notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above product name, version number,  
+	copyright notice, this list of conditions and the following disclaimer in the documentation 
+	and/or other materials provided with the distribution.
+    * Neither the name of OmegaBB nor the names of its contributors may be used to endorse or
+	promote products derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR 
+IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
+FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR 
+CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT 
+OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+

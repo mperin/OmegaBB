@@ -1,0 +1,9 @@
+To allow users to connect using LinkedIn:
+
+- Register an API key at LinkedIn. https://developer.linkedin.com/
+  Fill out all mandatory fields, and set the following:
+    OAuth Accept Redirect URL: http://www.yourwebsite.com/linkedin_login.php
+    OAuth Cancel Redirect URL: http://www.yourwebsite.com
+
+- You'll be given an API key and secret key.  As admin, go to your site settings and set
+  "linkedin_api_key" and "linkedin_secret_key", set "connect_with_linkedin" to true, and set "website_url"

@@ -1,0 +1,426 @@
+/* OmegaBB */
+
+/* Contributions from Trevor Williams */
+/* BlueRobot was here. http://bluerobot.com/web/layouts/layout2.html */
+/* http://css.maxdesign.com.au/listutorial/horizontal_master.htm */
+html {
+overflow-y: scroll;
+}
+
+body { font-family:%%body_font%%; margin:0; padding:0; overflow-x:hidden;}
+/*body { margin:0; overflow-x:hidden; padding:0; }*/
+a, u { cursor:pointer; display:inline; }
+[onclick] {
+cursor:pointer;
+}
+p.sysop { color:%%text_color1%%; display:inline; font-size:13px; font-weight:bold; }
+p.system {
+border-radius:3px;
+-moz-border-radius:3px;
+-webkit-border-radius:3px;
+background:none repeat scroll 0 0 %%color3%%;
+border:2px dashed %%color1%%;
+color:%%text_color1%%;
+font-size:13px;
+font-weight:bold;
+left:0;
+line-height:30px;
+padding:3px;
+position:relative;
+text-align:center;
+top:10px;
+max-width: 1160px;
+}
+.profiletext { background-color:%%color3%%;}
+.profiletext a { text-decoration:none; }
+.profiletext a:hover { text-decoration:underline; }
+.modtext { font-family:%%post_font%%; background-color:%%color3%%; color:%%text_color1%%; }
+.modtext a { color:%%text_color1%%; text-decoration:none; }
+.modtext a:hover { color:%%title_color%%; }
+.optionbox { bottom:50px; left:655px; position:relative; width:200px; }
+.inline_img { display:inline; position:relative; }
+.inline_img a { display:inline; position:relative; }
+.member_box { color:%%text_color2%%; font-size:12px; left:0; margin-left:0; max-width:650px; padding-left:3px; padding-right:3px; position:relative; text-align:center;  }
+.private_thread_box { color:%%text_color1%%; display:inline-block; font-size:12px; font-weight:normal; left:0; margin-left:0; margin-top:2px; max-width:650px; padding-left:0; padding-right:3px; position:relative; right:0; text-align:right; vertical-align:top; }
+
+.pcontainer {
+   float: right;
+   width: 25%;
+   text-align: right;
+}
+.pcontainer2 {
+   float: right;
+   text-align: right;
+}
+.wrapper {
+	min-height: 90%;
+	height: 90%;			
+	height: auto !important;
+}
+.plink { border-top: thin solid; border-bottom: thin solid; border-right: thin solid; border-left: thin solid; border-color: %%color3%%; color:%%text_color2%%; font-size:12px; height:1px; left:0; margin-left:10px; max-width:650px; padding-left:1px; padding-right:1px; position:relative; right:0; text-align:center; top:11px; vertical-align:top; width:650px; }
+.plink a { color:%%text_color2%%; font-size:12px; text-decoration:none; vertical-align:top; }
+.plink a:hover { text-decoration:underline; }
+.member { border-color:%%color2%%; color:%%text_color2%%; font-size:12px; left:0; padding-left:3px; padding-right:3px; right:50px; }
+.member a { color:%%text_color2%%; font-size:12px; text-decoration:none; }
+.member a:hover { text-decoration:underline; }
+#midrow { width: 1160px; color:%%text_color2%%; font-size:25px; padding-left:0; padding-top:10px; }
+.big_thread_title { color:%%title_color%%; font-size:25px; padding-bottom:10px; padding-left:0; padding-top:10px; text-decoration:none; }
+.big_thread_title a { color:%%title_color%%; font-size:25px; margin-bottom:10px; margin-left:0; margin-top:10px; text-decoration:none; }
+.big_thread_title a:hover { text-decoration:underline; }
+iframe { border-width:0; }
+iframe.hidden { height:0; visibility:hidden; width:0; }
+table#livebar { background-color:%%background_color1%%; color:%%text_color2%%; width:100%; }
+table#livebar td { border:medium none; margin:-30px; }
+.lb { background-color:%%background_color1%%; border-color:%%color2%%; color:%%text_color2%%; font-size:10px; left:0; max-height:5px; position:relative; vertical-align:top; width:1%; }
+
+.modbutton { font-size: 20px; color:%%text_color1%%; height:1px; left:0; position:relative; vertical-align:top; width:200px; }
+.modbutton a:hover { text-decoration:underline; }
+.modbuttonselected { font-size: 20px; background-color:%%color3%%; border:thin solid %%forum_title_color%%; color:%%text_color1%%; height:1px; left:0; position:relative; vertical-align:top; width:200px; }
+
+table#logtable { margin-left:0; margin-right:0; right:0; max-width:1165px; width:100%; }
+table#logtable td { font-family:%%post_font%%;}
+table#logtable tr { background-color:%%color3%%; left:0; margin-left:-10px; margin-right:20px; right:20px; width:1060px; }
+table#bigtable { margin-left:0; margin-right:0; right:0; max-width:1165px; width:100%; }
+table#bigtable td { font-family:%%post_font%%; padding:10px 0 10px 20px; }
+table#bigtable tr { background-color:%%color3%%; left:0; margin-left:-10px; margin-right:20px; right:20px; width:1060px; }
+.coluserlistone { background-color:%%color3%%; border-bottom:thin solid %%color2%%; border-color:%%color2%%; border-top:thin solid %%color2%%; color:%%text_color1%%; height:1px; left:0; position:relative; vertical-align:top; width:60px; }
+.coluserlistone a { background-color:%%color3%%; color:%%text_color1%%; height:1px; left:0; position:relative; text-decoration:none; vertical-align:top; width:60px; }
+.coluserlistone a:hover { text-decoration:underline; }
+.coluserlisttwo { background-color:%%color3%%; border-bottom:thin solid %%color2%%; border-color:%%color2%%; border-top:thin solid %%color2%%; color:%%text_color1%%; height:1px; left:0; position:relative; vertical-align:top; width:700px; }
+.coluserlisttwo a { background-color:%%color3%%; color:%%text_color1%%; height:1px; left:0; position:relative; text-decoration:none; vertical-align:top; width:700px; }
+.coluserlisttwo a:hover { text-decoration:underline; }
+.colone { font-size:16px; border-bottom:thin solid %%color2%%; border-color:%%color2%%; border-top:thin solid %%color2%%; color:%%text_color1%%; height:1px; left:0; position:relative; vertical-align:top; width:6%; }
+.colone a { color:%%color4%%; font-size:16px; font-style:normal; height:1px; left:0; margin-left:0; padding:1px 2px; position:relative; text-decoration:none; vertical-align:top; width:6%; }
+.colone a:hover { text-decoration:underline; }
+.coltwo { border-bottom:thin solid %%color2%%; border-color:%%color2%%; border-top:thin solid %%color2%%; color:%%forum_title_color%%; font-size:16px; font-style:normal; height:1px; position:relative; text-align:left; vertical-align:top; width:11%; }
+.coltwo a { color:%%forum_title_color%%; font-size:16px; text-decoration:none; vertical-align:top; }
+.colthree { border-bottom:thin solid %%color2%%; border-color:%%color2%%; border-top:thin solid %%color2%%; color:%%text_color1%%; font-size:16px; height:1px; margin:10px; text-align:left; vertical-align:top; width:63%;}
+.colthree a { color:%%title_color%%; text-decoration:none; vertical-align:top; }
+.colthree a:hover { text-decoration:underline; }
+.colthree a img { border: solid; border-width: 1px;}
+.colfour { border-bottom:thin solid %%color2%%; border-color:%%color2%%; border-top:thin solid %%color2%%; color:%%text_color1%%; font-size:13px; height:1px; text-align:center; vertical-align:top; min-width:120px; }
+.colfour a {text-decoration: none; color: %%title_color%%;}
+.colfour a:hover {text-decoration: underline;}
+.colfive { border-bottom:thin solid %%color2%%; border-color:%%color2%%; border-top:thin solid %%color2%%; color:%%text_color1%%; font-size:13px; height:1px; text-align:left; vertical-align:top; width:90px; }
+.colsix {border-bottom:thin solid %%color2%%; border-color:%%color2%%; border-top:thin solid %%color2%%; color:%%forum_title_color%%; font-size:16px; font-style:normal; height:1px; position:relative; text-align:left; vertical-align:top; width:11%;padding-left:20px;}
+table#thread_table { table-layout:fixed;min-width:750px; max-width:1250px; padding-bottom:20px; right:0; width:100%; }
+table#thread_table td { padding-bottom:1px; padding-left:0; text-align:left; table-layout: fixed; white-space:nowrap; overflow:hidden; }
+.tdcoltitle { color:%%text_color2%%; font-size:20px; height:1px; left:0; padding-left:0; padding-top:5px; position:relative; text-decoration:none; width:60px; }
+.tdcoltitle a, .tdcoltitle a:visited { color:%%forum_title_color%%; height:1px; left:0; padding-left:0; padding-top:5px; position:relative; width:60px; }
+.tdcoltitle a:hover { text-decoration:underline; }
+.tdcol { color:%%text_color1%%; font-size:14px; height:1px; left:0; padding-left:0; position:relative; text-align:left; width:33%; }
+.tdcol a { color:%%text_color2%%; height:1px; left:0; overflow:hidden; padding-left:0; position:relative; text-align:left; text-decoration:none; white-space:nowrap; width:33%; }
+.tdcol a:hover { text-decoration:underline; }
+.scroll { color:%%scroll_color%%; font-size:12px; height:1px; left:0; padding-left:0; position:relative; text-align:left; width:33%; }
+.scroll a { height:1px; color:%%scroll_color%%; left:0; padding-left:0; position:relative; text-align:left; text-decoration:none; width:33%; }
+.scroll a:hover { color:%%scroll_hover_color%%; }
+.wikiscroll {
+	color: %%text_color2%%;
+	vertical-align: top;	
+}
+.wikiscroll a {
+	color: %%text_color2%%;
+	vertical-align: top;
+	font-family: Courier New;
+}
+.wikiscroll a:hover {
+	color: %%forum_title_color%%;
+	text-decoration: none;
+}
+
+table#header_row { background-color:%%background_color1%%; width:100%; }
+table#header_row td { border:medium none; padding:10px 0 7px 4px; }
+.hrow0 { background-color:%%background_color1%%; color:%%text_color2%%; font-size:20px; height:1px; text-align:left; width:95%; }
+.hrow1 { background-color:%%background_color1%%; color:%%text_color1%%; height:1px; text-align:left; vertical-align:top; width:5%; }
+.pagenumbar { text-transform:lowercase;background-color:transparent; max-width:1160px; font-size:16px; padding-bottom:0; padding-top:10px; text-align:center; }
+.pageclassselected { border: 1px solid %%text_color2%%; color:%%text_color2%%; margin:0; padding:3px 3px 2px; text-decoration:none; }
+.pageclass { border:medium none; color:%%text_color2%%; margin:0; padding:3px 3px 2px; text-decoration:none; }
+.pageclass hover { color:red; text-decoration:underline; }
+.pageclassselected a { background-color:%%background_color1%%; }
+.pageclassselected a:link { text-decoration:none; }
+.pageclass a { background-color:%%background_color1%%; }
+.pageclassselected a:visited { background-color:%%background_color1%%; }
+.pageclass a:visited { background-color:%%background_color1%%; }
+table#statustable2 { width:100%; }
+table#statustable2 td { border:medium none; font-size:10px; margin:0; padding:5px; }
+table#statustable2 td a { border:medium none; font-size:10px; margin:0; padding:5px; }
+table#statustable { width:100%; }
+table#statustable td { border:medium none; font-size:14px; margin:0; padding:5px; }
+table#statustable td a { border:medium none; font-size:14px; margin:0; padding:5px; }
+table#statustable td a:visited { border:medium none; font-size:12px; padding:5px; }
+
+.status0 { background-color:%%color3%%; color:%%text_color1%%; font-size:12px; height:10px; text-align:left; width:80%; }
+.status0 a { background-color:%%color3%%; color:%%text_color1%%; font-size:12px; height:10px; text-align:left; text-decoration:none; width:80%; }
+.status0 a:visited { background-color:%%color3%%; color:%%text_color1%%; font-size:12px; height:10px; text-align:left; width:80%; }
+.status1 { text-align:center; width:5%; }
+.status2 { text-align:center; width:1%; }
+.status3 { text-align:center; width:1%; }
+.status4 { text-align:center; width:3%; }
+table#midrow { background-color:%%color2%%; color:%%text_color2%%; font-size:12px; height:10px; text-align:left; width:80%; }
+table#midrow td { border:medium none; padding:5px; }
+.untitled1 { font-weight:bold; text-align:center; width:1%; }
+.untitled2 { font-weight:bold; text-align:left; width:1%; }
+.tools { text-align:left; width:88%; }
+.untitled3 { text-align:right; width:5%; }
+.untitled4 { font-weight:bold; text-align:left; width:5%; }
+table#bottomrow { background-color:%%background_color1%%; width:100%; }
+table#bottomrow td { border:medium none; padding:5px; }
+.bottom1 { font-weight:bold; text-align:center; width:1px; }
+.bottom2 { font-weight:bold; text-align:left; width:1px; }
+.msg-box { font-weight:bold; text-align:left; width:100px; }
+.bottom3 { text-align:right; width:20px; }
+.bottom4 { font-weight:bold; width:5%; }
+.h3 { color:white; }
+#strong { color:%%title_color%%; font-size:20px; }
+
+#container {
+	width: 100%;
+	background-color:%%color12%%;
+	height:35px;
+	position:absolute;
+}
+#banner_area {
+	width: 100%;
+	top:35px;
+	left:186px;
+	position:absolute;
+}
+
+#menu ul
+{
+	/*position:absolute;*/
+	/*top:-77px;*/
+	right:0px;
+	vertical-align: center;
+	list-style-type: none;
+	text-align: left;
+	/*display:none*/
+}
+
+#menu ul li { display: inline; }
+
+#menu ul li a
+{
+	padding: 0.3em 1.25em;
+	color: %%title_colour%%;
+	background-color: %%border_colour%%;
+	font-family: Geneva, Arial, Helvetica, sans-serif;
+	font-size: 14px;
+	vertical-align: center;
+	text-decoration: none;
+}
+
+#menu ul li a:hover
+{
+	color: %%title_colour_selected%%;
+	background-color: %%colour1%%;
+}
+
+#tabs {
+    width:100%;
+    text-align:left;
+	position:absolute;
+	top:48px;
+	left:176px;
+	bottom: 0px;
+	height:32px;
+}
+
+.tab {
+    display:table-cell;
+	width: 10%;
+	background-color:%%color1%%; 
+	font-size:115%; 
+	height:30px; 
+	line-height:42px;
+	text-align: center;
+    border-left: 10px solid %%back_tab_color%%;
+	border-right: 10px solid %%back_tab_color%%;
+}
+
+.tabselected {
+    display:table-cell;
+	width: 10%;
+	background-color:%%color2%%; 
+	font-size:115%; 
+	height:30px; 
+	line-height:42px;
+	text-align: center;
+    border-left: 10px solid %%back_tab_color%%;
+	border-right: 10px solid %%back_tab_color%%;	
+}
+
+.filled {
+    width:100%;
+    clear:both;
+}
+
+body { background-color:%%color2%%; font-size:13px; height:100%; margin:0; padding:0; }
+h1 { color:%%color9%%; font-size:28px; font-weight:900; line-height:28px; margin:0 0 15px; padding:0; }
+p { color:%%text_color1%%; font-size:11px line-height:20px;
+margin:0 0 16px; padding:0; }
+#Content > p { margin:0; }
+#Content > p + p { text-indent:30px; }
+#inputdiv { color:%%text_color1%%; width:100%; }
+#obb_header { background-color:%%back_tab_color%%; background-repeat:repeat-x; border-bottom:40px solid %%back_tab_color%%; height:40px; margin:0 0 10px; padding:0; }
+#Content { background-color:%%color2%%; left:180px; margin:0; overflow-x:visible; padding:10px 20px 45px 10px; position:absolute; right:0; top:79px; z-index:2; }
+#profile_content { overflow-y:hidden; background-color:%%color3%%; bottom:20px; color:%%text_color2%%; font-size:16px; left:20px; padding:10px 10px 20px; position:relative; right:8px; top:20px; width:735px; }
+#profile_title { background-color:%%color3%; color:%%title_color%%; font-size:20px; padding:10px; }
+.profile_title { color:%%title_color%%; font-size:20px; text-decoration:none; vertical-align:top; }
+.colmod { background-color:%%color3%%; background-repeat:repeat-x; border-bottom:thin solid %%color2%%; border-color:%%color2%%; border-top:thin solid %%color2%%; color:%%text_color1%%; font-size:13px; height:1px; left:0; position:relative; vertical-align:top; width:200px; }
+.colmod a { background-color:%%color3%%; color:%%text_color1%%; height:1px; left:0; position:relative; text-decoration:none; vertical-align:top; }
+.colmod a:hover { color:%%title_color%%; }
+#inner_profile_content { font-family:%%post_font%%; background-color:%%color3%%; color:%%text_color1%%; font-size:16px; padding:10px; }
+#small_popup_content { background-color:%%color3%%; bottom:220px; color:%%text_color2%%; font-size:16px; left:20px; padding:10px 10px 20px; position:relative; right:8px; top:20px; width:335px; }
+#small_popup_title { background-color:%%color3%%; color:%%title_color%%; font-size:20px; padding:10px; }
+#inner_small_popup_content { background-color:%%color3%%; color:%%text_color2%%; font-size:16px; padding:10px; }
+#Panel { z-index: 10; background-color:%%color5%%; bottom:150px; color:%%text_color1%%; height:100%; left:0; line-height:17px; margin-top:0; padding:10px; position:fixed; top:0; width:160px; }
+#Loginbox { background-color:%%background_color1%%; border:0 dashed %%color6%%; bottom:0; color:%%text_color1%%; left:0; line-height:17px; padding:10px; position:absolute; top:0; width:30px; }
+.obbimage { left:7px; position:absolute; top:7px; }
+.obbtitle { color:%%text_color2%%; font-size:15px; font-weight:bold; height:40px; left:52px; padding-top:10px; position:absolute; top:-3px; }
+.obbblurb { color:%%text_color2%%; font-size:11px; left:52px; position:absolute; top:24px; }
+.livebar { border:1px dashed %%color6%%; color:%%text_color1%%; line-height:17px; margin:0; }
+#top_area { background-color:%%background_color1%%; color:%%text_color1%%; list-style-image:none; list-style-type:none; margin:0 auto; text-align:left; width:200px; }
+#content_area { background-color:%%color2%%; color:%%text_color1%%; height:200px; font-size: 16px; list-style-image:none; list-style-type:none; text-align:left; }
+.main_tab { font-size: 18px; background-color:%%color2%%; color:%%text_color1%%; }
+.message_center1 { color:%%text_color1%%; font-size:14px; list-style-image:none; list-style-type:none; margin:0; }
+.message_center1 a { color:%%text_color1%%; font-size:14px; list-style-image:none; list-style-type:none; margin:0; text-decoration:none; }
+.message_center1 a:hover { text-decoration:underline; }
+.message_center1 img { display:inline-block;position:relative;top:2px; }
+.console { background-color:%%background_color1%%; border-color:%%color2%%; color:%%text_color1%%; font-size:11px; left:23px; padding:4px; position:relative; }
+.theinputbox { width:730px; background-color:%%input_box_color%%; border:1px solid %%color7%%; color:%%text_color1%%; font-family:%%post_font%%; font-size:14px; overflow:auto; padding:5px;}
+.theinputbox2 {width:630px; background-color:%%input_box_color%%; border:1px solid %%color7%%; color:%%text_color1%%; font-family:%%post_font%%; font-size:14px; overflow:auto; padding:5px;}
+#bottombar {position:relative; top: 10px;}
+.pageexpandlink {color: %%text_color1%%; text-decoration: none; }
+.quote {
+position: relative;
+left: 30px;
+
+border-style:solid;
+border-width:2px;
+
+border-color: %%color2%%;
+margin-top:7px;
+margin-bottom:7px;
+margin-left:7px;
+margin-right:7px;
+
+}
+
+/*webkit dosen't respect max-width on tables, so this is a workaround*/
+#width_kludge{
+  max-width: 1250px;
+}
+#width_kludge2{
+   max-width: 1160px;
+}
+
+.articleoptionbox {
+   position: relative;
+   left: 765px;
+   bottom: 480px;
+   width: 400px;
+}
+
+a { text-decoration:none; color:%%title_color%%; cursor: pointer; }
+
+#sddm
+{ 
+margin: 0;
+padding: 0;
+z-index: 30;
+float: right;
+}
+
+#sddm li
+{ margin: 0;
+padding: 0;
+list-style: none;
+float: left;
+}
+
+#sddm li a
+{ display: block;
+margin: 0 1px 0 0;
+padding: 4px 10px;
+color: %%color13%%;
+text-align: center;
+text-decoration: none;
+width: 55px;
+}
+
+#sddm li a:hover
+{ background-color:%%color14%%}
+
+#sddm div
+{position: absolute;
+visibility: hidden;
+margin: 0;
+padding: 0;
+background: #EAEBD8;
+border: 1px solid #5970B2;
+z-index: 40;
+}
+
+#sddm div a
+{ position: relative;
+display: block;
+margin: 0;
+padding: 5px 10px;
+width: auto;
+white-space: nowrap;
+text-align: left;
+text-decoration: none;
+background: #EAEBD8;
+color: #2875DE;
+}
+
+#sddm div a:hover
+{ background: #49A3FF;
+color: #FFF}
+
+/*generated by CSSButtonGenerator.com */
+.rtbutton {
+	-moz-box-shadow:inset 0px 1px 0px 0px #bbdaf7;
+	-webkit-box-shadow:inset 0px 1px 0px 0px #bbdaf7;
+	box-shadow:inset 0px 1px 0px 0px #bbdaf7;
+	background-color:%%color3%%;
+	-moz-border-radius:6px;
+	-webkit-border-radius:6px;
+	border-radius:6px;
+    border:1px solid #707070;
+	display:inline-block;
+	color:%%title_color%%;
+	font-family:%%post_font%%;
+	font-size:12px;
+	font-weight:bold;
+	padding:2px 5px;
+	text-decoration:none;
+}.rtbutton:hover {
+	background-color:%%color1%%;
+}.rtbutton:active {
+	position:relative;
+	top:1px;
+}
+.postbutton {
+	-moz-box-shadow:inset 0px 1px 0px 0px #bbdaf7;
+	-webkit-box-shadow:inset 0px 1px 0px 0px #bbdaf7;
+	box-shadow:inset 0px 1px 0px 0px #bbdaf7;
+	background-color:%%color3%%;
+	-moz-border-radius:6px;
+	-webkit-border-radius:6px;
+	border-radius:6px;
+	border:1px solid #707070;
+	display:inline-block;
+	color:%%title_color%%;
+	font-family:%%post_font%%;
+	font-size:20px;
+	font-weight:bold;
+	padding:6px 6px;
+	text-decoration:none;
+}.postbutton:hover {
+	background-color:%%color1%%;
+}.postbutton:active {
+	position:relative;
+	top:1px;
+}

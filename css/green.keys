@@ -1,0 +1,16 @@
+%%colour1%%:#125614
+%%colour3%%:yellow
+%%border_colour%%:#17701A
+%%input_colour%%:#17701A 
+%%title_colour%%:#FFFF00
+%%title_colour_selected%%:#FFFF00
+%%blurb_colour%%:#FFFFFF
+%%text_colour%%:white
+%%text_colour2%%:yellow
+%%table_bg%%:null
+%%login_bg%%:null
+%%login_bg_colour%%:#125614
+%%colone_colour%%:white
+%%system_colour%%:red
+%%forum_font%%:'lucida grande','lucida sans unicode',verdana,tahoma,sans-serif
+%%base_font%%:verdana,arial,helvetica,sans-serif
