@@ -1,11 +1,10 @@
  <?php
-/*OmegaBB 0.9.2*/
+/*OmegaBB*/
     include('config.php');
     include('common.php');
 	
     $user_id=GetParam($_REQUEST,'user_id','');
-    $ip=GetParam($_REQUEST,'ip','');
-    $fb=GetParam($_REQUEST,'fb','');	
+    $ban_id=GetParam($_REQUEST,'ban_id','');
 ?>   
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
@@ -32,11 +31,9 @@
 <?php 
 if (isset ($user_id)) {
    echo '<body style="overflow:hidden;" onload="load_profile_page(' . $user_id . ')">';
-} else if (isset ($ip)) {
-   echo '<body style="overflow:hidden;" onload="load_ipaddr_page(\'' . $ip . '\')">';
 } else {
-   echo '<body style="overflow:hidden;" onload="load_fb_page(\'' . $fb . '\')">';
-}
+   echo '<body style="overflow:hidden;" onload="load_ban_page(\'' . $ban_id . '\')">';
+} 
 ?>
 
 <div id="profile_content">

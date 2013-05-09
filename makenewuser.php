@@ -1,5 +1,5 @@
 <?php
-/*OmegaBB 0.9.2*/
+/*OmegaBB*/
     include("captcha/securimage.php");
     include('omegabb.php');	
     $newuser=GetParam($_REQUEST,'newuser','');

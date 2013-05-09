@@ -1,5 +1,5 @@
 <?php
-	/*OmegaBB 0.9.2*/
+	/*OmegaBB*/
 	header( 'Cache-control: no-cache' );
 	header( 'Cache-control: no-store' );
 	header( 'Pragma: no-cache' );

@@ -1,10 +1,139 @@
 <?php
-/*OmegaBB 0.9.2*/
+/*OmegaBB*/
 @$ftmp = $_FILES['file']['tmp_name'];
 @$oname = $_FILES['file']['name'];
 @$fname = $_FILES['file']['name'];
 @$fsize = $_FILES['file']['size'];
 @$ftype = $_FILES['file']['type'];
+
+include('omegabb.php');
+
+function filename_check(&$filename) {
+	$bad_chars = array("'", "\\", ' ', '/', ':', '*', '?', '"', '<', '>', '|');
+	if ($filename != "") {
+	   $filename = str_replace($bad_chars, '_', $filename);
+	}
+}
+
+function add_file($user_id,$thread_id,$forum_id,$filename,$mime_type){
+   global $settings;
+
+   $cur = perform_query("select * from file where author_id=$user_id and post_id < 1 and is_deleted = 0 and avatar_number is null and thread_id != $thread_id",MULTISELECT);
+   while ($row = mysql_fetch_array( $cur )) {  
+	  unlink("files/tmp/from_" . $row["author_id"]."_".$row["file_id"]);  
+	  unlink("files/tmp/from_" . $row["author_id"]."_t_".$row["file_id"]);  
+	  perform_query("update file set is_deleted=2 where file_id=".$row["file_id"],UPDATE); 
+   }   
+   
+   $row=perform_query("SELECT count( * ) as total_record FROM file where author_id=$user_id and post_id < 1 and is_deleted = 0 and avatar_number is null",SELECT);
+   if ($row->total_record >= $settings->max_file_attachments) {
+      return -1;
+   }
+   
+   $q = "insert file "
+    		. "\n set "
+     		. "\n  post_id=0,"   					
+    		. "\n  author_id='" . $user_id . "',"
+    		. "\n  ip_address='" . $_SERVER['REMOTE_ADDR'] . "',"
+    		. "\n  filename='" . mysql_real_escape_string($filename) . "',"		
+			. "\n  mime_type='" . $mime_type . "',"
+     		. "\n  file_type='0',"   						
+    		. "\n  forum_id='" . $forum_id . "',"			
+    		. "\n  thread_id='" . $thread_id . "'";
+    	
+    $file_id = perform_query($q,INSERT);            			
+    return $file_id;
+}
+
+function add_file2($user_id,$forum_id,$filename,$mime_type){
+   global $settings;
+
+   $cur = perform_query("select * from file where author_id=$user_id and post_id = 0 and is_deleted = 0 and avatar_number is null",MULTISELECT);
+   while ($row = mysql_fetch_array( $cur )) {  
+	  unlink("files/tmp/from_" . $row["author_id"]."_".$row["file_id"]);  
+	  unlink("files/tmp/from_" . $row["author_id"]."_t_".$row["file_id"]);  
+	  perform_query("update file set is_deleted=2 where file_id=".$row["file_id"],UPDATE); 
+   }   
+   
+   $row=perform_query("SELECT count( * ) as total_record FROM file where author_id=$user_id and post_id < 1 and is_deleted = 0 and avatar_number is null",SELECT);
+   if ($row->total_record >= $settings->max_file_attachments) {
+      return -1;
+   }
+   
+   $q = "insert file "
+    		. "\n set "
+    		. "\n  author_id='" . $user_id . "',"
+     		. "\n  thread_id='-1',"   		
+     		. "\n  post_id='-1',"   			
+    		. "\n  ip_address='" . $_SERVER['REMOTE_ADDR'] . "',"
+    		. "\n  filename='" . mysql_real_escape_string($filename) . "',"			
+			. "\n  mime_type='" . $mime_type . "',"			
+     		. "\n  file_type='0',"   						
+    		. "\n  forum_id='" . $forum_id . "'";
+    	
+    $file_id = perform_query($q,INSERT);            			
+    return $file_id;
+}
+
+function add_image($user_id,$thread_id,$forum_id,$filename,$mime_type){
+   global $settings;
+   
+   $cur = perform_query("select * from file where author_id=$user_id and post_id < 1 and is_deleted = 0 and avatar_number is null and thread_id != $thread_id",MULTISELECT);
+   while ($row = mysql_fetch_array( $cur )) {  
+	  unlink("files/tmp/from_" . $row["author_id"]."_".$row["file_id"]);  
+	  unlink("files/tmp/from_" . $row["author_id"]."_t_".$row["file_id"]);  
+	  perform_query("update file set is_deleted=2 where file_id=".$row["file_id"],UPDATE); 
+   }   
+   
+   $row=perform_query("SELECT count( * ) as total_record FROM file where author_id=$user_id and post_id < 1 and is_deleted = 0 and avatar_number is null",SELECT);
+   if ($row->total_record >= $settings->max_file_attachments) {
+      return -1;
+   }
+   
+   $q = "insert file "
+    		. "\n set "
+     		. "\n  post_id=0,"   					
+    		. "\n  author_id='" . $user_id . "',"
+    		. "\n  ip_address='" . $_SERVER['REMOTE_ADDR'] . "',"
+    		. "\n  filename='" . mysql_real_escape_string($filename) . "',"		
+			. "\n  mime_type='" . $mime_type . "',"			
+     		. "\n  file_type='1',"   					
+     		. "\n  forum_id='" . $forum_id . "',"   					
+    		. "\n  thread_id='" . $thread_id . "'";
+    	
+    $file_id = perform_query($q,INSERT);            			
+    return $file_id;
+}
+
+function add_image2($user_id,$forum_id,$filename,$mime_type){
+   global $settings;
+   
+   $cur = perform_query("select * from file where author_id=$user_id and post_id = 0 and is_deleted = 0 and avatar_number is null",MULTISELECT);
+   while ($row = mysql_fetch_array( $cur )) {  
+	  unlink("files/tmp/from_" . $row["author_id"]."_".$row["file_id"]);  
+	  unlink("files/tmp/from_" . $row["author_id"]."_t_".$row["file_id"]);  
+	  perform_query("update file set is_deleted=2 where file_id=".$row["file_id"],UPDATE); 
+   }   
+   
+   $row=perform_query("SELECT count( * ) as total_record FROM file where author_id=$user_id and post_id < 1 and is_deleted = 0 and avatar_number is null",SELECT);
+   if ($row->total_record >= $settings->max_file_attachments) {
+      return -1;
+   }
+   
+   $q = "insert file "
+    		. "\n set "
+    		. "\n  author_id='" . $user_id . "',"
+     		. "\n  thread_id='-1',"   		
+     		. "\n  post_id='-1',"   			
+    		. "\n  ip_address='" . $_SERVER['REMOTE_ADDR'] . "',"
+    		. "\n  filename='" . mysql_real_escape_string($filename) . "',"			
+			. "\n  mime_type='" . $mime_type . "',"			
+     		. "\n  file_type='1',"   						
+    		. "\n  forum_id='" . $forum_id . "'";
+    	
+    $file_id = perform_query($q,INSERT);            			
+    return $file_id;
+}
 
 if(IsSet($ftmp)) :
 do {
@@ -99,6 +228,8 @@ do {
 	   }
 	}
 } while(false);
+
+
 ?>
 
 <html>

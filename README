@@ -1,5 +1,5 @@
 
-OmegaBB 0.9.2 (build 215)
+OmegaBB developmental version - build 217
 ====================================
 
 OmegaBB is a message board which features a fast interface, real-time notification when
@@ -8,6 +8,12 @@ a watched thread gets a new message, public and private threads, wiki articles a
 Webpage: http://www.omegabb.com
 
 See the file INSTALL on how to get OmegaBB running on your server.
+
+
+Changes in developmental version
+
+- option to need moderator approval from postings by new users
+- option to auto-delete old private threads
 
 Changes in version 0.9.2 (Feb 12, 2013)
 
@@ -123,7 +129,7 @@ Changes in version 0.3
 
 License:
 
-OmegaBB 0.9.2 (build 215)  Copyright (c) 2013, Ryan Smiderle.  All rights reserved.
+OmegaBB developmental version - build 217  Copyright (c) 2013, Ryan Smiderle.  All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted
 provided that the following conditions are met:

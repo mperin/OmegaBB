@@ -17,5 +17,5 @@ header( 'Expires: 0' );
     	return;
     } 
 
-    echo EditMsg($post_id, $content_of_post, $auth_ret);    
+    echo EditWiki($post_id, $content_of_post, $auth_ret);    
 ?> 

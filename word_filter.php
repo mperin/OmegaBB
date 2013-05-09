@@ -1,5 +1,5 @@
 <?php
-//OmegaBB 0.9.2
+//OmegaBB
 
 global $word_filter;
 

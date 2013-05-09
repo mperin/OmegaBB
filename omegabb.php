@@ -1,6 +1,6 @@
 <?php
 /* 
-OmegaBB 0.9.2 (build 215)  Copyright (c) 2013, Ryan Smiderle.  All rights reserved.
+OmegaBB developmental version - build 217  Copyright (c) 2013, Ryan Smiderle.  All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted
 provided that the following conditions are met:
@@ -25,6 +25,142 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 include_once('config.php');
 include_once('common.php');
+
+function SetForumReloadSignal() {
+		$cur = perform_query("select user_id from session where last_activity > DATE_SUB(now(),INTERVAL 6 MINUTE) and session != '0' order by user_id ASC LIMIT $results_per_page OFFSET $sql_offset",MULTISELECT);    	   
+		   
+		while ($row = mysql_fetch_array( $cur )) {
+	    $temp_id = $row["user_id"];   
+		}
+}
+
+
+
+
+
+function ApproveEvent($event_id) {
+	$row = perform_query("select * from queue where event_id=$event_id",SELECT);
+	$row2 = perform_query("select * from thread where thread_id=".$row->thread_id,SELECT);
+	$row3 = perform_query("select * from post where message_id=".$row->post_id,SELECT);
+
+	if ($row->type == 'post') {
+		perform_query("update post set needs_approval=0 where message_id = ".$row->post_id,UPDATE);
+
+		//if it's the last post in the thread, adjust thread info
+		if ($row2->num_posts < $row3->reply_num) {
+			perform_query("update thread set num_posts=" . $row3->reply_num. ",last_post_id_num='" . $row3->message_id  . "' where thread_id=" . $row->thread_id, UPDATE);
+		}
+	} else if ($row->type == 'editpost') {
+		perform_query("update post set message='".mysql_real_escape_string($row->data)."', edit_time=now() where message_id='".$row->post_id."'",UPDATE);
+	} else if ($row->type == 'editwiki') {
+		EditWiki($row->post_id, $row->data, $row->sender, 1);
+	} else if ($row->type == 'thread') {
+        perform_query("update thread set needs_approval=0 where thread_id =".$row->thread_id,UPDATE);
+	}
+	perform_query("delete from queue where event_id='$event_id'",DELETE);
+			
+	return "1^?".intext("Post approved");
+}
+
+function DisapproveEvent($event_id) {
+	$row = perform_query("select * from queue where event_id=$event_id",SELECT);
+	$row2 = perform_query("select username from user where user_id=".$row->sender,SELECT);
+	
+	LogEvent(1,intext("Rejected posting made by ") . " %%u" . $row->sender . ":" . $row2->username . ";");
+	
+	perform_query("delete from queue where event_id='$event_id'",DELETE);
+	
+    if ($row->type == 'post') {
+	    perform_query("delete from post where message_id = ".$row->post_id,UPDATE);
+		$cur = perform_query("select * from file where post_id=". $row->post_id,MULTISELECT); 
+		while ($row2 = mysql_fetch_array( $cur )) {
+			if ($row2[file_type] == 1) {
+				unlink("files/t_" . $row2[internal_id]);  
+				unlink("files/" . $row2[internal_id]);
+			} else {
+				unlink("files/". $row2[internal_id]);  
+			}
+		}
+		perform_query("update file set is_deleted=2 where post_id=". $row->post_id,UPDATE);    
+    } else if ($row->type == 'thread') {
+	    perform_query("delete from post where message_id = ".$row->post_id,UPDATE);
+		perform_query("delete from thread where thread_id = ".$row->thread_id,UPDATE);
+		$cur = perform_query("select * from file where post_id=". $row->post_id,MULTISELECT); 
+		while ($row2 = mysql_fetch_array( $cur )) {
+			if ($row2[file_type] == 1) {
+				unlink("files/t_" . $row2[internal_id]);  
+				unlink("files/" . $row2[internal_id]);
+			} else {
+				unlink("files/". $row2[internal_id]);  
+			}
+		}
+		perform_query("update file set is_deleted=2 where post_id=". $row->post_id,UPDATE);    
+	}
+
+    return "1^?".intext("Post disapproved");
+}
+
+function ShowEvent($event_id) { 
+    global $settings;
+    $row = perform_query("select * from queue where event_id=$event_id",SELECT);
+	$row2 = perform_query("select * from post where message_id=".$row->post_id,SELECT);
+    $row3 = perform_query("select username from user where user_id=".$row->sender,SELECT);
+	$row4 = perform_query("select title from thread where thread_id=".$row->thread_id,SELECT);
+		
+    if ($row->type == 'post') {
+	    $return_string = "1^?" . $event_id . "^?" . $row->type . "^?" . $row->sender  . "^?" . $row3->username . "^?" . $row->thread_id . "^?" . $row4->title . "^?" . $row2->message . "^?" . $row2->tstamp;
+	} else if ($row->type  == 'editpost' || $row->type  == 'editwiki') {	
+	    $return_string = "1^?" . $event_id . "^?" . $row->type . "^?" . $row->sender  . "^?" . $row3->username . "^?" . $row->thread_id . "^?" . $row4->title . "^?" . $row2->message . "^?" . $row2->tstamp . "^?" . $row->data . "^?";
+	} else if ($row->type == 'thread') {		
+	    $return_string = "1^?" . $event_id . "^?" . $row->type . "^?" . $row->sender  . "^?" . $row3->username . "^?" . $row->thread_id . "^?" . $row4->title . "^?" . $row2->message . "^?" . $row2->tstamp . "^?^?" . $row->forum_id . "^?" . $settings->forum_topic_names[$row->forum_id];
+	}
+
+	return $return_string;
+}
+
+function add_to_approval_queue($type,$user_id,$thread_id,$post_id,$content,$forum_id,$thread_title) {
+    if ($type == "post" ) {
+		perform_query("insert queue "
+			. "\n set "
+			. "\n  type='" . $type . "',"
+			. "\n  date=now(),"
+			. "\n  sender='" . $user_id . "',"
+			. "\n  post_id='" . $post_id . "',"			
+			. "\n  forum_id='" . $forum_id . "',"					
+			. "\n  thread_id='" . $thread_id . "'",	INSERT);
+	} else if ($type == "editpost" ) {
+		perform_query("insert queue "
+			. "\n set "
+			. "\n  type='" . $type . "',"
+			. "\n  data = '" . mysql_real_escape_string($content) . "',"
+			. "\n  date=now(),"
+			. "\n  sender='" . $user_id . "',"
+			. "\n  post_id='" . $post_id . "',"			
+			. "\n  thread_title='" . $thread_title . "',"			
+			. "\n  forum_id='" . $forum_id . "',"						
+			. "\n  thread_id='" . $thread_id . "'",	INSERT);
+	} else if ($type == "editwiki" ) {
+		perform_query("insert queue "
+			. "\n set "
+			. "\n  type='" . $type . "',"
+			. "\n  data = '" . mysql_real_escape_string($content) . "',"
+			. "\n  date=now(),"
+			. "\n  sender='" . $user_id . "',"
+			. "\n  post_id='" . $post_id . "',"			
+			. "\n  forum_id='" . $forum_id . "',"						
+			. "\n  thread_id='" . $thread_id . "'",	INSERT);
+	} else if ($type == "thread" ) {			
+			perform_query( "insert queue "
+			. "\n set "
+			. "\n  type='" . $type . "',"
+			. "\n  date=now(),"
+			. "\n  sender='" . $user_id . "',"
+			. "\n  post_id='" . $post_id . "',"			
+			. "\n  forum_id='" . $forum_id . "',"						
+			. "\n  thread_id='" . $thread_id . "'",	INSERT);
+	}
+	return;
+}
 
 function UnsetLockdownButton() {
    $row = perform_query("select settings from user where user_id=0",SELECT);
@@ -171,7 +307,7 @@ function SaveSiteSettings() {
     "forum_topic_names" => "string-array,11",			
     "name_of_status_2" => "string",	
     "avatars_same_size" => "bool",	
-	"max_avatar_dimensions" => "int-array,2,x-x",
+	"max_avatar_dimensions" => "int-array,2,0-x",
     "narrow_width" => "int,0-x",			
 	"default_avatar" => "string",	
 	"system_avatar" => "string",	
@@ -208,6 +344,7 @@ function SaveSiteSettings() {
     "prune_deleted_posts" => "bool",		
 	"prune_session_table" => "bool",			
 	"prune_closed_threads" => "int,x-x",		
+	"prune_old_pt" => "int,0-x",
     "datetime_format" => "string",			
     "allow_hotlinking" => "bool",	
 	"strip_exif" => "bool",	
@@ -441,9 +578,10 @@ function LinkedInLogin ($li_id) {
 	   }
 	}	
 
-	if ($row->is_banned == 2) {
+    $row2 = perform_query("select type from ban where fb_li_id = '".$li_id."'",SELECT);
+	if ($row2->type == "perm_ban" || $row2->type =="ban" || $row2->type == "wiped") {
 		$msg = IsBanned($row->user_id); 
-		if ($msg) {return "-1^?".$msg;}
+		return "-1^?".$msg;
 	}
 
 	$userid = $row->user_id; 
@@ -493,15 +631,21 @@ function LinkedInNewUser ($user_data,$user_connections) {
     $avatar_url = $vals[$index["PICTURE-URL"][0]]["value"];
 	$li_profile_url = $vals[$index["PUBLIC-PROFILE-URL"][0]]["value"]; 
 	
-	$banned_list = user_block_list(0,1);
-	if ((preg_match('/;' . $_SERVER['REMOTE_ADDR'] . '(-|$|,)/',$banned_list))) { 
-	  return "-1^?".intext("New accounts not allowed");
+    $row = perform_query("select ip_address from ban where ip_address = '".$_SERVER['REMOTE_ADDR']."'",SELECT);
+	if ($row) {
+		return "-1^?".intext("New accounts not allowed");
 	}
 	if ($_COOKIE['sessioncookie']) {
-	   if ((preg_match('/-' . $_COOKIE['sessioncookie'] . '(,|$)/',$banned_list))) { 
-		  return "-1^?".intext("New accounts not allowed");
-	   }      
+		$row = perform_query("select cookie from ban where cookie = '".$_COOKIE['sessioncookie']."'",SELECT);
+		if ($row) {
+			return "-1^?".intext("New accounts not allowed");
+		}
 	}
+    $row = perform_query("select fb_li_id from ban where fb_li_id = '".$li_id."'",SELECT);
+	if ($row) {
+		return "-1^?".intext("New accounts not allowed");
+	}
+	
 	if ($info = lockdown_button_check(SITEDOWN+NONEWACCOUNTS)) {
 	   $sysinfo = explode("^?",$info);
 	   if ($sysinfo[1]) {
@@ -510,9 +654,6 @@ function LinkedInNewUser ($user_data,$user_connections) {
 		  return "-1^?".intext("Feature disabled");
 	   }
 	}	   
-	if ((preg_match('/;' . $li_id . '(,|$)/',$banned_list))) { 
-	  return "-1^?".intext("New accounts not allowed");
-	}   
 
 	if ($settings->new_accounts_allowed == 0) {
 	  return "-1^?".intext("New accounts not allowed");
@@ -687,9 +828,10 @@ function FacebookLogin ($fb_id,$fb_name,$fb_link) {
 	   }
 	}	
 	
-	if ($row->is_banned == 2) {
+    $row2 = perform_query("select type from ban where fb_li_id = '".$fb_id."'",SELECT);
+	if ($row2->type == "perm_ban" || $row2->type =="ban" || $row2->type == "wiped") {
 		$msg = IsBanned($row->user_id); 
-		if ($msg) {return "-1^?".$msg;}
+		return "-1^?".$msg;
 	}
 
 	$userid = $row->user_id; 
@@ -727,30 +869,33 @@ function FacebookNewUser ($fb_id,$fb_name,$fb_link,$access_token) {
    global $settings;
    global $userid;
       
-   $banned_list = user_block_list(0,1);
-   if ((preg_match('/;' . $_SERVER['REMOTE_ADDR'] . '(-|$|,)/',$banned_list))) { 
-      return "-1^?".intext("New accounts not allowed");
-   }
-   if ($_COOKIE['sessioncookie']) {
-	   if ((preg_match('/-' . $_COOKIE['sessioncookie'] . '(,|$)/',$banned_list))) { 
-		  return "-1^?".intext("New accounts not allowed");
-	   }      
-   }
-   if ($info = lockdown_button_check(SITEDOWN+NONEWACCOUNTS)) {
-	   $sysinfo = explode("^?",$info);
-	   if ($sysinfo[1]) {
-	      return "-1^?".$sysinfo[1];
-	   } else {
-	      return "-1^?".intext("Feature disabled");
-	   }
-   }	   
-   if ((preg_match('/;' . $fb_id . '(,|$)/',$banned_list))) { 
-      return "-1^?".intext("New accounts not allowed");
-   }   
-   
-   if ($settings->new_accounts_allowed == 0) {
-      return "-1^?".intext("New accounts not allowed");
-   }
+    $row = perform_query("select ip_address from ban where ip_address = '".$_SERVER['REMOTE_ADDR']."'",SELECT);
+	if ($row) {
+		return "-1^?".intext("New accounts not allowed");
+	}
+	if ($_COOKIE['sessioncookie']) {
+		$row = perform_query("select cookie from ban where cookie = '".$_COOKIE['sessioncookie']."'",SELECT);
+		if ($row) {
+			return "-1^?".intext("New accounts not allowed");
+		}
+	} 
+    $row = perform_query("select fb_li_id from ban where fb_li_id = '".$fb_id."'",SELECT);
+	if ($row) {
+		return "-1^?".intext("New accounts not allowed");
+	}
+	
+	if ($info = lockdown_button_check(SITEDOWN+NONEWACCOUNTS)) {
+		$sysinfo = explode("^?",$info);
+		if ($sysinfo[1]) {
+			return "-1^?".$sysinfo[1];
+		} else {
+			return "-1^?".intext("Feature disabled");
+		}
+	}	   
+
+	if ($settings->new_accounts_allowed == 0) {
+	  return "-1^?".intext("New accounts not allowed");
+	}
    
    	if ($settings->new_account_limit != -1) {
 		$count=0;
@@ -969,7 +1114,7 @@ function housecleaning() {
 		. "\n DATE_ADD(tstamp,INTERVAL ".$settings->auto_close_thread[1]." DAY) < now() and "
 		. "\n state = 3 and no_auto_close = 0", UPDATE); 		
 	}
-
+	
     //updating user's information (about every 2 weeks)
 	$user_id = Check_Auth();
 	$row = perform_query("select * from user where user_id=" . $user_id . " and prune_time < DATE_SUB(now(),INTERVAL 14 DAY)", SELECT);
@@ -1017,18 +1162,7 @@ function housecleaning() {
 			$cur4 = perform_query($query, MULTISELECT);
 
 			while ($row = mysql_fetch_array( $cur4 )) {
-				perform_query("delete from thread WHERE thread_id=". $row["thread_id"],DELETE); 
-				perform_query("delete from post WHERE thread_id=". $row["thread_id"],DELETE); 
-				$cur5 = perform_query("select * from file where thread_id=". $row["thread_id"],MULTISELECT); 
-				while ($row2 = mysql_fetch_array( $cur5 )) {
-					if ($row2[file_type] == 1) {
-						unlink("files/t_" . $row2[internal_id]);  
-						unlink("files/" . $row2[internal_id]);
-					} else {
-						unlink("files/" . $row2[internal_id]);  
-					}
-				}
-				perform_query("update file set is_deleted=2 where thread_id=".$row["thread_id"],UPDATE); 
+				SystemDeleteThread($row["thread_id"]);
 			}
 		}
 		//Prune closed threads
@@ -1037,18 +1171,7 @@ function housecleaning() {
 			$cur7 = perform_query($query, MULTISELECT);
 
 			while ($row = mysql_fetch_array( $cur7 )) {
-				perform_query("delete from thread WHERE thread_id=". $row["thread_id"],DELETE); 
-				perform_query("delete from post WHERE thread_id=". $row["thread_id"],DELETE); 
-				$cur6 = perform_query("select * from file where thread_id=". $row["thread_id"],MULTISELECT); 
-				while ($row2 = mysql_fetch_array( $cur6 )) {
-					if ($row2[file_type] == 1) {
-						unlink("files/t_" . $row2[internal_id]);  
-						unlink("files/" . $row2[internal_id]);
-					} else {
-						unlink("files/" . $row2[internal_id]);  
-					}
-				}
-				perform_query("update file set is_deleted=2 where thread_id=".$row["thread_id"],UPDATE); 
+				SystemDeleteThread($row["thread_id"]);
 			}
 		} 
    
@@ -1057,7 +1180,7 @@ function housecleaning() {
 		} 	   
 
 		if ($settings->prune_session_table) {
-		   perform_query("delete from session WHERE last_activity < DATE_SUB(now(),INTERVAL 28 DAY)",DELETE); 
+		   perform_query("delete from session WHERE last_activity < DATE_SUB(now(),INTERVAL 6 MONTH)",DELETE); 
 		} 	   
 
 		//Delete rows from the file table that have been set to deleted for at least two weeks.
@@ -1066,8 +1189,57 @@ function housecleaning() {
 		//update System's prune time
 		perform_query("update user set prune_time=now() where user_id=0",UPDATE); 	  
 		
+		//See if any PTs need to be auto-deleted
+		$ptdelquery = "";
+		if ($settings->prune_old_pt != 0) {	
+			$ptdelquery = "select thread_id from thread where forum_id = 12 and "
+			. "\n DATE_ADD(tstamp,INTERVAL ".$settings->prune_old_pt." MONTH) < now()";
+		}	
+		
+		if ($ptdelquery) {
+			$cur7 = perform_query($ptdelquery, MULTISELECT);
+
+			while ($row = mysql_fetch_array( $cur7 )) {
+				$row3 = perform_query("select block_allow_list from thread where thread_id=".$row["thread_id"]);
+
+				$tmp_string = explode(",",$row3->block_allow_list);
+				foreach ($tmp_string as $t) {
+					if ($t == "") {continue;}
+					$tmp_string2 = explode(";",$t);
+
+					$row2 = perform_query("select my_threads, my_private_threads from user where user_id=".$tmp_string2[0]);
+
+					$new_my_threads = preg_replace('/,' . $row["thread_id"] . '.*(,|$)/', '${1}' , $row2->my_threads);  
+					$new_my_private_threads = preg_replace('/,-?' . $row["thread_id"] . '(,|$)/', '${1}' , $row2->my_private_threads);  
+
+					$ret_value = perform_query("update user "
+					. "\n set "
+					. "\n  my_private_threads='" . $new_my_private_threads . "',"	
+					. "\n  my_threads='" . $new_my_threads . "'"
+					. " where  user_id='".$tmp_string2[0]."'",UPDATE); 
+
+					SystemDeleteThread($row["thread_id"]);
+				}
+			}
+		}		
+		
 		LogEvent(2,intext("Weekly system maintenance tasks were ran"));
    }
+}
+
+function SystemDeleteThread($thread_id) {
+	perform_query("delete from thread WHERE thread_id=". $thread_id, DELETE); 
+	perform_query("delete from post WHERE thread_id=". $thread_id, DELETE); 
+	$cur5 = perform_query("select * from file where thread_id=". $thread_id, MULTISELECT); 
+	while ($row2 = mysql_fetch_array( $cur5 )) {
+		if ($row2[file_type] == 1) {
+			unlink("files/t_" . $row2[internal_id]);  
+			unlink("files/" . $row2[internal_id]);
+		} else {
+			unlink("files/". $row2[internal_id]);  
+		}
+	}
+	perform_query("update file set is_deleted=2 where thread_id=".$thread_id,UPDATE); 
 }
 
 function SaveSettings($autowatch,$hideonlinestatus,$user_id) {
@@ -1131,12 +1303,9 @@ function IsBannedFromThisThread($user_id,$thread_id) {
 		   return 1;
 		}
 	}
-	
-	//global bans
-	$banned_list = user_block_list(0);
 
-	if (preg_match('/,' . $user_id . ';/',$banned_list)) { 
-		return 1;
+	if (IsBanned($user_id)) {
+	   return 1;
 	}
 
 	return 0;
@@ -1237,14 +1406,9 @@ function RevertWikiPost($post_id,$thread_id,$revision,$user_id) {
     return "1^?Revision made";
 }
 
-function EditMsg($post_id, $theinput, $user_id) {
-    define('EDIT_GRACE_TIME',3);
+function EditWiki($post_id, $theinput, $user_id, $force=0) {
     global $settings;
-    $reload_signal = 0;  //1 causes the thread to reload 
 	
-	//in the thread table, type means 0: public thread, 1, 2 or 3: private thread
-	//in the post table, type means 0: normal post, 1, 2, 3 or 4: wiki post
-
 	$row = perform_query("select * from post where message_id='$post_id'",SELECT); 
     $row2 = perform_query("select * from thread where thread_id='" . $row->thread_id . "'", SELECT);
     $row3 = perform_query("select * from user where user_id='" . $user_id . "'", SELECT);
@@ -1267,130 +1431,153 @@ function EditMsg($post_id, $theinput, $user_id) {
 	if (mb_strlen($theinput) > $settings->max_post_length) {
 	   return "-1^?".intext("Post is too long, maximum size is")." ". $settings->max_post_length . " ".intext("characters").".";
 	}
-
 	if (is_flood()) { 
 	   return "-1^?".intext("Flood attack detected, please wait a while before posting");
 	}
-
 	if (($row->state == 1) && ($row2->forum_id != 13) ){
 	   return "-1^?".intext("You are not allowed to edit this post");
 	}	
-	
-	if (($row->type == 0) && ($row->author_id != $user_id)) {
-	   return "-1^?".intext("You're not the author of this post");
-	}
-
-	if (($row->type == 0) && ($settings->edit_time == 0) ) {
-	   return "-1^?".intext("Post editing disabled");
-	}	
-	
-	if (($row->type == 0) && ($settings->edit_time != -1) &&  (strtotime($row->tstamp) < strtotime("-".($settings->edit_time + EDIT_GRACE_TIME)." minutes"))) {
-	   return "-1^?".intext("The maximum time allowed to edit this post was exceeded");
-	}
-	
 	if (!IsValidThread($row->thread_id)) {
 	   return "-1^?".intext("This is not a valid thread");	
 	}
 	
-	if ($row->type > 0) {
-	   $can_edit = 0;
-	   switch ($row->type) {
-		  case 1: //author only
-			  if ($user_id == $row->author_id) {
-				 $can_edit = 1;
-			  }
-			  break;
-		  case 2: //star members and moderators
-			  if (GetStatus($user_id) > 1) {
-				 $can_edit = 1;
-			  }
-			  break;
-		  case 3: //regular users
-			  if (GetStatus($user_id) > 0) {
-				 $can_edit = 1;
-			  }
-			  break;
-		  case 4: //all users
-			  $can_edit = 1;
-			  break;			
-	   }
-	   //author of wiki can always edit
-	   if ($user_id == $row2->author_id) {
-		  $can_edit = 1;
-	   }	   
-	   if (!$can_edit) {
-		  return "-1^?".intext("Status not high enough to edit this wiki");	
-	   }   	   
-	   if (!$settings->enable_articles) {
-		  return "-1^?".intext("Articles are disabled");	
-	   }
-    }	
+	$can_edit = 0;
+	if ($user_id == $row2->author_id) {$can_edit = 1;}
+	if ($row->type == 2 && GetStatus($user_id) > 1) {$can_edit = 1;}
+	if ($row->type == 3 && GetStatus($user_id) > 0) {$can_edit = 1;}
+	if ($row->type == 4) {$can_edit = 1;}
+
+	if (!$can_edit) {
+		return "-1^?".intext("Status not high enough to edit this wiki");	
+	}   	   
+	if (!$settings->enable_articles) {
+		return "-1^?".intext("Articles are disabled");	
+	}
 	
 	hyperlinks_check($theinput); 
 	rich_text_check($theinput);
 	wordfilter_check($theinput);	
 	emote_check($theinput);
-	if (($row->type > 0) && ($row->reply_num == 1)) {
-		image_check4($theinput,$row->thread_id,$row->author_id,$post_id,$row->reply_num);
-	} else {
-		image_check3($theinput,$row->thread_id,$row->author_id,$post_id,$row->reply_num);
-		file_check3($theinput,$row->thread_id,$row->author_id,$post_id,$row->reply_num);
-	}
+	image_check4($theinput,$row->thread_id,$row->author_id,$post_id,$row->reply_num);
 	youtube_check($theinput);		
 	image_links_check($theinput);		
 	make_spaces_check($theinput);	
-	
-	if (($row->type > 0) && ($row->reply_num == 1)) {
-		//it's a wiki edit
-		$reload_signal = 1;
-		
-		//previous post with reply_num of 1 is given reply_num of 0		
-		$query = "update post "
-			. "\n set "
-			. "\n reply_num=-1"
-			. " where message_id='$post_id'";
-		perform_query($query, UPDATE);
-			
-	    //new post is made, and given reply_num = 1, revision++
-		$query = "insert post "
-    		. "\n set "
-    		. "\n  author_id='" . $row3->user_id . "',"
-    		. "\n  message='" . $theinput . "',"
-    		. "\n  thread_id=" . $row->thread_id . ","
-    		. "\n  tstamp=now(),"
-    		. "\n  ip_address='" . $_SERVER['REMOTE_ADDR'] . "',"
-    		. "\n  avatar_id=" . $row3->current_avatar . ","
-    		. "\n  reply_num=1,"
-    		. "\n  author_name='" . mysql_real_escape_string($row3->username) . "',"
-		    . "\n  type=".$row->type.","
-			. "\n  revision=".($row->revision + 1);
-		perform_query($query, INSERT);
-		
-	} else {
-		$query = "update post "
-			. "\n set "
-			. "\n  message='" . $theinput . "',"
-			. "\n  edit_time=now()"
-			. " where message_id='$post_id'";
-		perform_query($query, UPDATE);
-	}
-	
-	$num_posts = 0;
-	if ($row->type > 0) {
-	   $temp = GetInfo($user_id);
-	   $user_info = explode("^?",$temp);  
-	   $user_name = $user_info[1];
 
-	   PostMsg($user_id, "<i>".intext("Article was edited by"). " " . mysql_real_escape_string($user_name) . " (" . strtoupper($user_id) . ") " . intext("on") . " " . date('F jS\, Y'). "</i>", $row->thread_id, 1);
-	   
-	   //this needs to be given to the client to add to this article to their mythreads_hash 
-	   $num_posts = $row2->num_posts + 1;
-	}
+	if ($status == 0 && $settings->post_approval && $force == 0) {
+	   add_to_approval_queue('editwiki',$user_id,$row->thread_id,$post_id,$theinput,$row2->forum_id);
+       return "-2^?".intext("Your post has been received and is pending approval");
+    }
+	
+	//previous post with reply_num of 1 is given reply_num of 0		
+	$query = "update post "
+		. "\n set "
+		. "\n reply_num=-1"
+		. " where message_id='$post_id'";
+	perform_query($query, UPDATE);
+
+	//new post is made, and given reply_num = 1, revision++
+	$query = "insert post "
+		. "\n set "
+		. "\n  author_id='" . $row3->user_id . "',"
+		. "\n  message='" . $theinput . "',"
+		. "\n  thread_id=" . $row->thread_id . ","
+		. "\n  tstamp=now(),"
+		. "\n  ip_address='" . $_SERVER['REMOTE_ADDR'] . "',"
+		. "\n  avatar_id=" . $row3->current_avatar . ","
+		. "\n  reply_num=1,"
+		. "\n  author_name='" . mysql_real_escape_string($row3->username) . "',"
+		. "\n  type=".$row->type.","
+		. "\n  revision=".($row->revision + 1);
+	perform_query($query, INSERT);
+
+	$num_posts = 0;
+
+	$temp = GetInfo($user_id);
+	$user_info = explode("^?",$temp);  
+	$user_name = $user_info[1];
+
+	PostMsg($user_id, "<i>".intext("Article was edited by"). " " . mysql_real_escape_string($user_name) . " (" . strtoupper($user_id) . ") " . intext("on") . " " . date('F jS\, Y'). "</i>", $row->thread_id, 1);
+
+	//this needs to be given to the client to add to this article to their mythreads_hash 
+	$num_posts = $row2->num_posts + 1;
 	
 	//$theinput = preg_replace('/\\r/','', $theinput);  //IE is getting "\r"s
 	$theinput = stripslashes($theinput);
 
-	return "1^?Post edited^?$theinput^?$reload_signal^?$num_posts";
+	return "1^?Post edited^?$theinput^?1^?$num_posts";
+}
+
+function EditMsg($post_id, $theinput, $user_id) {
+    define('EDIT_GRACE_TIME',3);
+    global $settings;
+	
+	$row = perform_query("select * from post where message_id='$post_id'",SELECT); 
+    $row2 = perform_query("select * from thread where thread_id='" . $row->thread_id . "'", SELECT);
+    $row3 = perform_query("select * from user where user_id='" . $user_id . "'", SELECT);
+	
+	$status = $row3->status;
+
+	if (($row2->type == 0) && ($status > -1) && ($status < 5) && !($row-type > 0 && $row2->author_id == $user_id)) {
+	    $block_allow_list = $row2->block_allow_list;
+
+		if ((preg_match('/,newusers/',$block_allow_list)) && ($status == 0)) { 
+		   return "-1^?".intext("New users are not allowed to edit this post");
+		}   
+		if (preg_match('/,' . $user_id . ';/',$block_allow_list)) { 
+		   return "-1^?".intext("You are not allowed to edit this post");
+		}
+	}
+
+    if ($msg = IsBanned(Check_Auth())) { return "-1^?".intext("You are not allowed to edit this post").". ".$msg;}
+	
+	if (mb_strlen($theinput) > $settings->max_post_length) {
+	   return "-1^?".intext("Post is too long, maximum size is")." ". $settings->max_post_length . " ".intext("characters").".";
+	}
+	if (is_flood()) { 
+	   return "-1^?".intext("Flood attack detected, please wait a while before posting");
+	}
+	if (($row->state == 1) && ($row2->forum_id != 13) ){
+	   return "-1^?".intext("You are not allowed to edit this post");
+	}	
+	if ($row->author_id != $user_id) {
+	   return "-1^?".intext("You're not the author of this post");
+	}
+	if ($settings->edit_time == 0) {
+	   return "-1^?".intext("Post editing disabled");
+	}
+	if (($settings->edit_time != -1) && (strtotime($row->tstamp) < strtotime("-".($settings->edit_time + EDIT_GRACE_TIME)." minutes"))) {
+	   return "-1^?".intext("The maximum time allowed to edit this post was exceeded");
+	}
+	if (!IsValidThread($row->thread_id)) {
+	   return "-1^?".intext("This is not a valid thread");	
+	}
+
+	hyperlinks_check($theinput); 
+	rich_text_check($theinput);
+	wordfilter_check($theinput);	
+	emote_check($theinput);
+	image_check3($theinput,$row->thread_id,$row->author_id,$post_id,$row->reply_num);
+	file_check3($theinput,$row->thread_id,$row->author_id,$post_id,$row->reply_num);
+	youtube_check($theinput);		
+	image_links_check($theinput);		
+	make_spaces_check($theinput);	
+
+	if ($status == 0 && $settings->post_approval) {
+	   add_to_approval_queue('editpost',$user_id,$row->thread_id,$post_id,$theinput,$row2->forum_id);
+       return "-2^?".intext("Your post has been received and is pending approval");
+    }
+	
+    perform_query("update post "
+		. "\n set "
+		. "\n  message='" . $theinput . "',"
+		. "\n  edit_time=now()"		
+		. " where message_id='$post_id'", UPDATE);
+
+	//$theinput = preg_replace('/\\r/','', $theinput);  //IE is getting "\r"s
+	$theinput = stripslashes($theinput);
+
+	return "1^?Post edited^?$theinput";
+
 }
 
 function ForumIndex($page) {
@@ -1692,40 +1879,44 @@ function GetUserList($page, $filter){
 	   $my_query = "select user_id, username from user where status > 2 order by user_id ASC LIMIT $results_per_page OFFSET $sql_offset";
 	   $my_query2 = "SELECT count( * ) as total_record FROM user where status > 2";	   
 	}
-    if ($filter == "banned") {	
-	   $do_sql = 0;   
-	   $banned_list = user_block_list(0);
-	   $temp_list_z = explode(",",$banned_list);  
-	   $total_pages = ceil(count($temp_list_z) / $results_per_page);
+    if ($filter == "banned") {
+		$do_sql = 0;   
+		$count = 0;
 	   
-	   for ($i = 0; $i < $results_per_page; $i++) {
-	      $temp_list[$i] = $temp_list_z[$i+$sql_offset];
-	   }
+		$row = perform_query("SELECT count( * ) as total_record FROM ban WHERE 1",SELECT);  
+		$total_pages = ceil($row->total_record / $results_per_page);
 		
-	   foreach ($temp_list as $t) {
-	      if ($t == "") {continue;}
-		  $count++;
-		  $user_id = preg_replace('/;.*$/','', $t);
-		  if ($user_id == "-1") {
-		      $ip_addr = preg_replace('/^-1;/','', $t);
-			  $ip_addr = preg_replace('/\-.*/','', $ip_addr);
-			  if (!IsAdmin(Check_Auth())) {
-			     $ip_addr = preg_replace('/[0-9]+\.[0-9]+$/','?.?', $ip_addr);
-			  }
-		      $user_list .= $user_id . "^?" . $ip_addr . "^?";
-		  } else if ($user_id == "-2") {
-			  $fb_id = preg_replace('/^-2;/','', $t);
-			  if (!IsAdmin(Check_Auth())) {
-			     $fb_id = preg_replace('/[0-9]{1,5}$/','?', $fb_id);
-			  }
-			  $user_list .= $user_id . "^?" . $fb_id . "^?";
-		  } else {
-			  $row = perform_query("select username from user where user_id='". $user_id . "'",SELECT); 
-			  $username = $row->username; 
-			  $user_list .= $user_id . "^?" . $username . "^?";
-		  }
-	   }
-	}	
+		$cur = perform_query("select * from ban order by ban_id ASC LIMIT $results_per_page OFFSET $sql_offset",MULTISELECT);    	   
+
+		while ($row = mysql_fetch_array( $cur )) {
+			if ($row["type"] == "wiped") {
+				if ($row["ip_address"]) {
+					$username = $row["ip_address"];
+
+					if (!IsAdmin(Check_Auth())) {
+						$username = preg_replace('/[0-9]+\.[0-9]+$/','?.?', $username);
+					} 
+				}
+				if ($row["fb_li_id"]) {
+					$fb_li_id = $row["fb_li_id"];
+
+					if (!IsAdmin(Check_Auth())) {
+						$fb_li_id = preg_replace('/[0-9]{1,5}$/','?', $fb_li_id);
+					}
+					$username .= " / social media id: " . $fb_li_id;
+
+			    }
+			    $user_list .= $row["ban_id"] . "^?-1^?" . $username . "^?";		
+			    $count++;
+			} else {	
+				$row3 = perform_query("select username from user where user_id = '".$row["user_id"]."'",SELECT);
+				$user_id = $row["user_id"];
+				$username = $row3->username;
+				$user_list .= $row["ban_id"] . "^?" . $user_id . "^?" . $username . "^?";		
+				$count++;
+			}
+	    }
+	}
 	if ($filter == "online") {	
 	    $do_sql = 0;
 		
@@ -1741,7 +1932,7 @@ function GetUserList($page, $filter){
 		   
 		   if (($row->settings & 1) && (!IsAdmin(Check_Auth()))) { continue;}
 		   
-		   $user_list .=  $temp_id . "^?" . $row->username . "^?";
+		   $user_list .=  "0^?" . $temp_id . "^?" . $row->username . "^?";
 		   $count++;
 		}	
 	}
@@ -1750,7 +1941,7 @@ function GetUserList($page, $filter){
 		$cur = perform_query($my_query,MULTISELECT);    	   
 		   
 		while ($row = mysql_fetch_array( $cur )) {
-		   $user_list .=  $row["user_id"] . "^?" . $row["username"] . "^?";
+		   $user_list .=  "0^?" . $row["user_id"] . "^?" . $row["username"] . "^?";
 		   $count++;
 		}
 		
@@ -1759,7 +1950,7 @@ function GetUserList($page, $filter){
     }
 	return "1^?" . $page . "^?" . $total_pages . "^?" . $count . "^?" . $user_list;
 }   
-	
+
 function ThreadModOptions($thread_id) {
    global $settings;
    
@@ -1945,11 +2136,8 @@ function WikiModOptions($user_id,$thread_id,$page,$post_position) {
 		   $is_thread_banned = 0;
 	   }  
    }
-   
-   $global_bans = user_block_list(0);
 
-   $is_global_banned = 0;
-   if ((preg_match('/,' . $user_id . ';/',$global_bans))) { 
+   if (is_banned($user_id)) {
 	   $is_global_banned = 1;
    }
    
@@ -2323,133 +2511,6 @@ function WatchThread($thread_id,$total_posts) {
     return "1^?$ret_value";  
 }
 
-function filename_check(&$filename) {
-	$bad_chars = array("'", "\\", ' ', '/', ':', '*', '?', '"', '<', '>', '|');
-	if ($filename != "") {
-	   $filename = str_replace($bad_chars, '_', $filename);
-	}
-}
-
-function add_file($user_id,$thread_id,$forum_id,$filename,$mime_type){
-   global $settings;
-
-   $cur = perform_query("select * from file where author_id=$user_id and post_id < 1 and is_deleted = 0 and avatar_number is null and thread_id != $thread_id",MULTISELECT);
-   while ($row = mysql_fetch_array( $cur )) {  
-	  unlink("files/tmp/from_" . $row["author_id"]."_".$row["file_id"]);  
-	  unlink("files/tmp/from_" . $row["author_id"]."_t_".$row["file_id"]);  
-	  perform_query("update file set is_deleted=2 where file_id=".$row["file_id"],UPDATE); 
-   }   
-   
-   $row=perform_query("SELECT count( * ) as total_record FROM file where author_id=$user_id and post_id < 1 and is_deleted = 0 and avatar_number is null",SELECT);
-   if ($row->total_record >= $settings->max_file_attachments) {
-      return -1;
-   }
-   
-   $q = "insert file "
-    		. "\n set "
-     		. "\n  post_id=0,"   					
-    		. "\n  author_id='" . $user_id . "',"
-    		. "\n  ip_address='" . $_SERVER['REMOTE_ADDR'] . "',"
-    		. "\n  filename='" . mysql_real_escape_string($filename) . "',"		
-			. "\n  mime_type='" . $mime_type . "',"
-     		. "\n  file_type='0',"   						
-    		. "\n  forum_id='" . $forum_id . "',"			
-    		. "\n  thread_id='" . $thread_id . "'";
-    	
-    $file_id = perform_query($q,INSERT);            			
-    return $file_id;
-}
-
-function add_file2($user_id,$forum_id,$filename,$mime_type){
-   global $settings;
-
-   $cur = perform_query("select * from file where author_id=$user_id and post_id = 0 and is_deleted = 0 and avatar_number is null",MULTISELECT);
-   while ($row = mysql_fetch_array( $cur )) {  
-	  unlink("files/tmp/from_" . $row["author_id"]."_".$row["file_id"]);  
-	  unlink("files/tmp/from_" . $row["author_id"]."_t_".$row["file_id"]);  
-	  perform_query("update file set is_deleted=2 where file_id=".$row["file_id"],UPDATE); 
-   }   
-   
-   $row=perform_query("SELECT count( * ) as total_record FROM file where author_id=$user_id and post_id < 1 and is_deleted = 0 and avatar_number is null",SELECT);
-   if ($row->total_record >= $settings->max_file_attachments) {
-      return -1;
-   }
-   
-   $q = "insert file "
-    		. "\n set "
-    		. "\n  author_id='" . $user_id . "',"
-     		. "\n  thread_id='-1',"   		
-     		. "\n  post_id='-1',"   			
-    		. "\n  ip_address='" . $_SERVER['REMOTE_ADDR'] . "',"
-    		. "\n  filename='" . mysql_real_escape_string($filename) . "',"			
-			. "\n  mime_type='" . $mime_type . "',"			
-     		. "\n  file_type='0',"   						
-    		. "\n  forum_id='" . $forum_id . "'";
-    	
-    $file_id = perform_query($q,INSERT);            			
-    return $file_id;
-}
-
-function add_image($user_id,$thread_id,$forum_id,$filename,$mime_type){
-   global $settings;
-   
-   $cur = perform_query("select * from file where author_id=$user_id and post_id < 1 and is_deleted = 0 and avatar_number is null and thread_id != $thread_id",MULTISELECT);
-   while ($row = mysql_fetch_array( $cur )) {  
-	  unlink("files/tmp/from_" . $row["author_id"]."_".$row["file_id"]);  
-	  unlink("files/tmp/from_" . $row["author_id"]."_t_".$row["file_id"]);  
-	  perform_query("update file set is_deleted=2 where file_id=".$row["file_id"],UPDATE); 
-   }   
-   
-   $row=perform_query("SELECT count( * ) as total_record FROM file where author_id=$user_id and post_id < 1 and is_deleted = 0 and avatar_number is null",SELECT);
-   if ($row->total_record >= $settings->max_file_attachments) {
-      return -1;
-   }
-   
-   $q = "insert file "
-    		. "\n set "
-     		. "\n  post_id=0,"   					
-    		. "\n  author_id='" . $user_id . "',"
-    		. "\n  ip_address='" . $_SERVER['REMOTE_ADDR'] . "',"
-    		. "\n  filename='" . mysql_real_escape_string($filename) . "',"		
-			. "\n  mime_type='" . $mime_type . "',"			
-     		. "\n  file_type='1',"   					
-     		. "\n  forum_id='" . $forum_id . "',"   					
-    		. "\n  thread_id='" . $thread_id . "'";
-    	
-    $file_id = perform_query($q,INSERT);            			
-    return $file_id;
-}
-
-function add_image2($user_id,$forum_id,$filename,$mime_type){
-   global $settings;
-   
-   $cur = perform_query("select * from file where author_id=$user_id and post_id = 0 and is_deleted = 0 and avatar_number is null",MULTISELECT);
-   while ($row = mysql_fetch_array( $cur )) {  
-	  unlink("files/tmp/from_" . $row["author_id"]."_".$row["file_id"]);  
-	  unlink("files/tmp/from_" . $row["author_id"]."_t_".$row["file_id"]);  
-	  perform_query("update file set is_deleted=2 where file_id=".$row["file_id"],UPDATE); 
-   }   
-   
-   $row=perform_query("SELECT count( * ) as total_record FROM file where author_id=$user_id and post_id < 1 and is_deleted = 0 and avatar_number is null",SELECT);
-   if ($row->total_record >= $settings->max_file_attachments) {
-      return -1;
-   }
-   
-   $q = "insert file "
-    		. "\n set "
-    		. "\n  author_id='" . $user_id . "',"
-     		. "\n  thread_id='-1',"   		
-     		. "\n  post_id='-1',"   			
-    		. "\n  ip_address='" . $_SERVER['REMOTE_ADDR'] . "',"
-    		. "\n  filename='" . mysql_real_escape_string($filename) . "',"			
-			. "\n  mime_type='" . $mime_type . "',"			
-     		. "\n  file_type='1',"   						
-    		. "\n  forum_id='" . $forum_id . "'";
-    	
-    $file_id = perform_query($q,INSERT);            			
-    return $file_id;
-}
-
 function NewUsername($newusername, $user_id) {
    global $settings;
    
@@ -2557,7 +2618,7 @@ function SaveTheme($user_id,$theme) {
 	return "1^?".intext("Theme Saved");	
 }    
     
-function user_block_list($user_id,$with_cookies=0) {
+function user_block_list($user_id) {
     $row = perform_query("select thread_block_list from user where user_id='". $user_id . "'",SELECT); 
 	if ($row->thread_block_list == "") {return "";}
 	
@@ -2566,14 +2627,6 @@ function user_block_list($user_id,$with_cookies=0) {
 	    $mem = trim($mem);
 	    if ($mem == "") {continue;}
 		if ($mem == "newusers") {$block_list .= ",newusers"; continue;}
-
-		if (preg_match("/^-1;/",$mem)) {$block_list .= "," . $mem; continue;}		
-		if (preg_match("/^-2;/",$mem)) {$block_list .= "," . $mem; continue;}		
-		
-		if ($with_cookies) {
-			$row2 = perform_query("select cookie from session where user_id='". $mem . "'",SELECT); 
-			$block_list .= ",-" . $row2->cookie;
-		}
 		
         $row = perform_query("select last_ip from user where user_id='". $mem . "'",SELECT); 
 
@@ -2610,7 +2663,7 @@ function pt_block_list($user_id) {
 	return $block_list;
 }
 
-function PostThread($user_id, $forum_id, $content_of_thread, $thread_title, $wiki_type=0, $comment_type=0) {
+function PostThreadToQueue($user_id, $forum_id, $content_of_thread, $thread_title, $wiki_type=0, $comment_type=0) {
 	global $settings;
     $img_ret_val = array();
 	
@@ -2671,6 +2724,133 @@ function PostThread($user_id, $forum_id, $content_of_thread, $thread_title, $wik
     		. "\n  tstamp=now(),"
     		. "\n  creation_time=now(),"			
     		. "\n  num_posts=1,"
+    		. "\n  needs_approval=1,"			
+			. "\n  state = ".$comment_type.","
+    		. "\n  forum_id=" . $forum_id;
+	$thread_id = perform_query($first_query,INSERT); 
+	$thread_id = rtrim($thread_id);
+	$ret_value .= "^?" . $thread_id;
+	
+	$row = perform_query("SELECT * FROM user WHERE user_id=" . $user_id, SELECT);	
+    $avatar_id=$row->current_avatar; 
+    $username=$row->username;
+    $my_threads=$row->my_threads . "," . $thread_id . ":1";	
+	
+	hyperlinks_check($content_of_thread);
+	rich_text_check($content_of_thread);
+	wordfilter_check($content_of_thread);		
+	emote_check($content_of_thread);
+	youtube_check($content_of_thread);			
+    $img_ret_val = image_check2($content_of_thread,$forum_id,$user_id);
+	$file_ret_val = file_check2($content_of_thread,$forum_id,$user_id);	
+	image_links_check($content_of_thread);		
+	make_spaces_check($content_of_thread);
+	
+    $post_query = "insert post "
+    	. "\n set "
+    	. "\n  author_id='" . $user_id . "',"
+    	. "\n  message='" . $content_of_thread . "',"
+    	. "\n  thread_id=" . $thread_id . ","
+    	. "\n  tstamp=now(),"
+    	. "\n  ip_address='" . $_SERVER['REMOTE_ADDR'] . "'," 		
+    	. "\n  avatar_id=" . $avatar_id . ","    		
+    	. "\n  reply_num=" . 1 . ","
+		. "\n  type = ".$wiki_type.","					
+    	. "\n  author_name='" . mysql_real_escape_string($username) . "'";   		
+	$post_id = perform_query($post_query,INSERT);
+	
+	foreach ($img_ret_val as $i) {
+	    perform_query("update file set post_id=" . $post_id . ", thread_id=" .$thread_id." where file_id=" . $i,UPDATE);
+    }
+	foreach ($file_ret_val as $i) {
+	    perform_query("update file set post_id=" . $post_id . ", thread_id=" .$thread_id." where file_id=" . $i,UPDATE);
+    }
+	
+    perform_query("update thread set last_post_id_num='" . $post_id . "' where thread_id=" . $thread_id,UPDATE);
+	perform_query("update user set my_threads='" . $my_threads . "' where user_id=" . $user_id,UPDATE);
+	perform_query("UPDATE user SET num_posts=num_posts+1 WHERE user_id=" . $user_id,UPDATE); 
+	
+	//the my_private_threads column in the System account is being used to store the user ids of users who want to
+	//automatically watch all new threads.  
+	$row = perform_query("select my_private_threads from user where user_id=0", SELECT);
+    $user_list = explode(",",$row->my_private_threads);  
+	foreach ($user_list as $user) {
+	   if ($user == "") {continue;}
+	   if ($user == $user_id) {continue;}
+	   
+	   $row2 = perform_query("select my_threads from user where user_id=$user", SELECT);
+       $my_threads=$row2->my_threads . "," . $thread_id . ":0";		
+       perform_query("update user set my_threads='".$my_threads."' WHERE user_id=$user",UPDATE); 
+	}
+	
+	return "1^?" . $thread_id;
+}
+
+
+function PostThread($user_id, $forum_id, $content_of_thread, $thread_title, $wiki_type=0, $comment_type=0) {
+	global $settings;
+    $img_ret_val = array();
+	
+    if ($thread_title == "") {$thread_title = "Untitled";}
+   
+    $row = perform_query("select status from user where user_id='" . $user_id . "'", SELECT);
+	$status = $row->status;
+	
+	if ($msg = IsBanned(Check_Auth())) { return "-1^?".intext("You are not permitted to post a new thread").". ".$msg;}
+
+	if (mb_strlen($content_of_thread) > $settings->max_post_length) {
+	   return "-1^?".intext("Post is too long, maximum size is")." ". $settings->max_post_length . " ".intext("characters").".";
+	}	
+	if (mb_strlen(trim($content_of_thread)) == 0) {
+	   return "-1^?".intext("Your post is empty");
+	}	
+
+	if (is_flood()) {
+	   return "-1^?".intext("Flood attack detected, please wait a while before posting");
+	}	
+	
+	if ($forum_id == 13) {
+		if (mb_strlen($thread_title) > $settings->size_of_article_title) { 
+		   return "-1^?".intext("Article title is too long");
+		}	
+	} else {
+		if (mb_strlen($thread_title) > $settings->size_of_thread_title) { 
+		   return "-1^?".intext("Thread title is too long");
+		}
+	}
+
+	$user_status = GetStatus($user_id);
+	
+	if ($forum_id == 13) {	
+		if ($settings->status_to_create_articles > $user_status) {
+	       return "-1^?".intext("User status not high enough to post articles");
+		}  
+	} else {
+	    if ($settings->status_to_start_threads > $user_status) {
+	       return "-1^?".intext("User status not high enough to post threads");
+	    }
+	}
+	
+	if (!IsValidForum($forum_id)) {
+	   return "-1^?".intext("This is not a valid forum.");
+	}
+	
+    $block_allow_list = user_block_list($user_id);
+   
+    wordfilter_check($thread_title);
+   
+    if ($user_status == 0 && $settings->post_approval) {$extra = "\n needs_approval = 1,";} else {$extra = "";}
+   
+	$ret_value = "";
+	$first_query = "insert thread "
+    		. "\n set "
+    		. "\n  author_id='" . $user_id . "',"
+    		. "\n  title='" . $thread_title . "',"
+    		. "\n  block_allow_list='" . $block_allow_list . "',"			
+    		. "\n  tstamp=now(),"
+			. $extra
+    		. "\n  creation_time=now(),"			
+    		. "\n  num_posts=1,"
 			. "\n  state = ".$comment_type.","
     		. "\n  forum_id=" . $forum_id;
 	$thread_id = perform_query($first_query,INSERT); 
@@ -2729,6 +2909,11 @@ function PostThread($user_id, $forum_id, $content_of_thread, $thread_title, $wik
        perform_query("update user set my_threads='".$my_threads."' WHERE user_id=$user",UPDATE); 
 	}
 	
+	if (($user_status == 0) && $settings->post_approval && ($force == 0)) {
+	   add_to_approval_queue('thread',$user_id,$thread_id,$post_id,'',$forum_id,$thread_title);
+       return "-2^?".intext("Your post has been received and is pending approval");
+	}
+	
 	return "1^?" . $thread_id;
 }
 
@@ -2739,7 +2924,7 @@ function PostMsg($user_id, $theinput, $thread_id, $force=0) {
     $row = perform_query("select status from user where user_id='" . $user_id . "'", SELECT);
 	$status = $row->status;
 
-    $row = perform_query("select author_id, block_allow_list, type, state from thread where thread_id='" . $thread_id . "'", SELECT);
+    $row = perform_query("select * from thread where thread_id='" . $thread_id . "'", SELECT);
 	
 	//when $force equals 1 it's a post caused by the internal system, so normal restrictions do not apply
 	if ((($row->state == 1) || ($row->state == 4)) && ($force == 0)) {
@@ -2762,38 +2947,35 @@ function PostMsg($user_id, $theinput, $thread_id, $force=0) {
 	if (mb_strlen($theinput) > $settings->max_post_length) {
 	   return "-1^?".intext("Post is too long, maximum size is")." ". $settings->max_post_length . " ".intext("characters").".";
 	}
-	
 	if (mb_strlen(trim($theinput)) == 0) {
 	   return "-1^?".intext("Your post is empty");
 	}	
-	
 	if (is_flood() && ($force == 0)) {
 	   return "-1^?".intext("Flood attack detected, please wait a while before posting");
 	}
-	
 	if (!IsValidThread($thread_id,1)) {
 	   return "-1^?".intext("This is not a valid thread");	
 	}
 	
-	$row = perform_query("SELECT * FROM thread WHERE thread_id = " . $thread_id,SELECT);
 	$num_posts = $row->num_posts;
 	$num_posts++;
-	$forum_id = $row->forum_id;
 
-	$row = perform_query("SELECT * FROM user WHERE user_id='$user_id'",SELECT);
-	$userid=$row->user_id; 
-	$username=$row->username; 
-	$avatar_id=$row->current_avatar; 
-
-	$my_threads=$row->my_threads; 
-
-	if (preg_match('/,' . $thread_id . ':[0-9]+/',$my_threads) != 0) {
-	  $my_threads = preg_replace('/,' . 	$thread_id . ':[0-9]+/',',' . $thread_id . ':' . $num_posts, $my_threads);         
-	} else {
-	  $my_threads .= ',' . $thread_id . ':' . $num_posts;
-	}
+	$row2 = perform_query("SELECT * FROM user WHERE user_id='$user_id'",SELECT);
+	$userid=$row2->user_id; 
+	$username=$row2->username; 
+	$avatar_id=$row2->current_avatar; 
 	
-	perform_query("update user set my_threads='" . $my_threads . "' where user_id=" . $user_id,UPDATE);
+	if (!($status == 0 && $settings->post_approval && $force == 0)) {
+		$my_threads=$row2->my_threads; 
+
+		if (preg_match('/,' . $thread_id . ':[0-9]+/',$my_threads) != 0) {
+		  $my_threads = preg_replace('/,' . 	$thread_id . ':[0-9]+/',',' . $thread_id . ':' . $num_posts, $my_threads);         
+		} else {
+		  $my_threads .= ',' . $thread_id . ':' . $num_posts;
+		}
+		
+		perform_query("update user set my_threads='" . $my_threads . "' where user_id=" . $user_id,UPDATE);
+	}
 	
 	hyperlinks_check($theinput); 
 	rich_text_check($theinput);
@@ -2805,6 +2987,12 @@ function PostMsg($user_id, $theinput, $thread_id, $force=0) {
     image_links_check($theinput);	
 	make_spaces_check($theinput);
 
+	if ($status == 0 && $settings->post_approval && $force == 0) {
+	   $extra = "\n needs_approval = 1,";
+	} else {
+       $extra = "";
+    }
+	
 	$post_query = "insert post "
     		. "\n set "
     		. "\n  author_id='" . $userid . "',"
@@ -2814,12 +3002,15 @@ function PostMsg($user_id, $theinput, $thread_id, $force=0) {
     		. "\n  ip_address='" . $_SERVER['REMOTE_ADDR'] . "',"
     		. "\n  avatar_id=" . $avatar_id . ","
     		. "\n  reply_num=" . $num_posts . ","
+			. $extra
     		. "\n  author_name='" . mysql_real_escape_string($username) . "'";
 			
 	$post_id = perform_query($post_query, INSERT);	
 	
-    perform_query("update thread set num_posts=" . $num_posts . ",last_post_id_num='" . $post_id . "' where thread_id=" . $thread_id,UPDATE);
-
+	if (!($status == 0 && $settings->post_approval && $force == 0)) {
+       perform_query("update thread set num_posts=" . $num_posts . ",last_post_id_num='" . $post_id . "' where thread_id=" . $thread_id, UPDATE);
+    }
+	
 	foreach ($img_ret_val as $i) {
 	    perform_query("update file set post_id=" . $post_id . " where file_id=" . $i . " and post_id=0", UPDATE);
     }
@@ -2827,9 +3018,13 @@ function PostMsg($user_id, $theinput, $thread_id, $force=0) {
 	    perform_query("update file set post_id=" . $post_id . " where file_id=" . $i . " and post_id=0", UPDATE);
     }
 	
-	perform_query("UPDATE user SET num_posts=num_posts+1 WHERE user_id=" . $userid, UPDATE); 
-	
-	return $thread_id . "^?" . $num_posts . "^?" . $post_id;
+	if ($status == 0 && $settings->post_approval && $force == 0) {
+	   add_to_approval_queue('post',$userid,$thread_id,$post_id,'',$row->forum_id);
+       return "-2^?".intext("Your post has been received and is pending approval");
+    } else {
+	   perform_query("UPDATE user SET num_posts=num_posts+1 WHERE user_id=" . $userid, UPDATE); 
+	   return $thread_id . "^?" . $num_posts . "^?" . $post_id;
+	}
 }
  
 function is_flood() {
@@ -2906,7 +3101,6 @@ function emote_check(&$theinput) {
       }
    }
 }
-
 
 function youtube_check(&$theinput) {
    global $settings;
@@ -3230,44 +3424,6 @@ function image_check4(&$theinput,$thread_id,$user_id,$post_id,$reply_num){
    }
 }
 
-function GetPage($page, $forum_id) {
-    global $settings;
-	if ($settings->must_login_to_see_forum && (Check_Auth() <= 0)) {return "-1^?".intext("You must sign in to see the forums");}
-	if (lockdown_button_check(MUSTLOGIN) && (Check_Auth() <= 0)) {return "-1^?".intext("You must sign in to see the forums");}
-	if (!IsValidForum($forum_id)) {return "-1^?".intext("Invalid forum");}
-	
-	if ($forum_id == 12) {
-	   $user_id = Check_Auth();
-	   $row = perform_query("select my_private_threads from user where user_id='$user_id'", SELECT);
-	   if (!$row) { 
-		   $thread_count[11] = 0;
-	   } else {
-		   $row_info = "";		   
-		   $private_threads_array = explode(",",$row->my_private_threads);
-		   $start = (count($private_threads_array) - 1) - ($page * 10);
-		   for ($j = $start; $j > $start - 11; $j--) {
-			  if ($j < 0) {break;}
-			  if ($private_threads_array[$j] < 0) { $private_threads_array[$j] *= -1;}  //make it positive if it's negative
-			  $row2 = perform_query("select * from thread where thread_id='" . $private_threads_array[$j] . "'", SELECT);
-			  $row_info .=  $row2->forum_id . "^?" . $row2->thread_id . "^?" . $row2->title . "^?" . $row2->state . "^?";
-			  $count++;
-		   }
-		   $ret_value .=  $row_info;
-	   }
-	} else {		   
-	    $row = perform_query("SELECT count( * ) as total_stickies FROM thread where forum_id = $forum_id and (state = 3 || state = 4)");
-	
-		$sql_offset = ($page * 10) - $row->total_stickies;
-		$cur = perform_query("select * from thread where forum_id = $forum_id and state != 2 and state != 3 and state != 4 ORDER BY thread_id DESC LIMIT 11 OFFSET $sql_offset",MULTISELECT);    	   
-		   
-		while ($row = mysql_fetch_array( $cur )) {
-		   $row_info .=  $row["forum_id"] . "^?" . $row["thread_id"] . "^?" . $row["title"] . "^?" . $row["state"] . "^?";
-		   $count++;
-		}
-	}
-	return ($forum_id  . "^?" . $page . "^?" . $count . "^?" . $row_info);
-}
-
 function GetForumInfo($forum_id) {	
     global $settings;
     if (!IsValidForum($forum_id)) {return "-1^?".intext("Invalid forum");}
@@ -3313,36 +3469,37 @@ function GetState($user_id) {
 }
 
 function NewUser($newuser,$newpassword) {
-   global $settings;
-   global $userid;
-   
-   $banned_list = user_block_list(0,1);
+	global $settings;
+	global $userid;
 
-   if ((preg_match('/;' . $_SERVER['REMOTE_ADDR'] . '(-|,|$)/',$banned_list))) { 
-      return "-1^?".intext("New accounts not allowed");
-   }
-	if ($_COOKIE['sessioncookie']) {
-		if ((preg_match('/-' . $_COOKIE['sessioncookie'] . '(,|$)/',$banned_list))) { 
-		    return "-1^?".intext("New accounts not allowed");
-		}   	
-	} 
+    $row = perform_query("select ip_address from ban where ip_address = '".$_SERVER['REMOTE_ADDR']."'",SELECT);
+	if ($row) {
+		return "-1^?".intext("New accounts not allowed");
+	}
 	
-   if ($settings->new_accounts_allowed == 0) {
-      return "-1^?".intext("New accounts not allowed");
-   }
+	if ($_COOKIE['sessioncookie']) {
+		$row = perform_query("select cookie from ban where cookie = '".$_COOKIE['sessioncookie']."'",SELECT);
+		if ($row) {
+			return "-1^?".intext("New accounts not allowed");
+		}
+	} 
+
+	if ($settings->new_accounts_allowed == 0) {
+		return "-1^?".intext("New accounts not allowed");
+	}
+
+	if ($settings->connect_with_username == 0){            
+		return "-1^?".intext("Feature disabled");
+	}
    
-   if ($settings->connect_with_username == 0){            
-	   return "-1^?".intext("Feature disabled");
-   }
-   
-   if ($info = lockdown_button_check(SITEDOWN+NONEWACCOUNTS)) {
-	   $sysinfo = explode("^?",$info);
-	   if ($sysinfo[1]) {
-	      return "-1^?".$sysinfo[1];
-	   } else {
-	      return "-1^?".intext("Feature disabled");
-	   }
-   }	
+	if ($info = lockdown_button_check(SITEDOWN+NONEWACCOUNTS)) {
+		$sysinfo = explode("^?",$info);
+		if ($sysinfo[1]) {
+			return "-1^?".$sysinfo[1];
+		} else {
+			return "-1^?".intext("Feature disabled");
+		}
+	}	
 
    $newuser = trim($newuser);
    

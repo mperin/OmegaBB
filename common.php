@@ -1,5 +1,5 @@
 <?php
-/*OmegaBB 0.9.2*/
+/*OmegaBB*/
 
 //initialization routine and a collection of commonly used functions
 
@@ -147,7 +147,7 @@ function Check_Auth(){
 	$row = perform_query("select * from session where session='$sess'",SELECT);
 
 	if (!$row) {
-	   return -1;
+	   return -3;
 	}
 
 	refresh_session();
@@ -253,34 +253,32 @@ function GetStatus($user_id) {
 function IsBanned($user_id) {
 	global $settings;
 
-	$row = perform_query("select is_banned, ban_expire_time from user where user_id=".$user_id,SELECT);
-	if ($row->is_banned) {
-		if ($row->is_banned == 1) {$state = "muted";} else {$state = "banned";}
-		if ($row->ban_expire_time) {
-			$d1 = time() ;
-			$d2 = strtotime($row->ban_expire_time);	
-			if ($d1 > $d2) {
-				$row2 = perform_query("select thread_block_list from user where user_id='0'",SELECT); 
-				$old_list = $row2->thread_block_list;
-				$new_list = preg_replace('/,' . $user_id . '/', '', $old_list);  
-				perform_query("update user "
-					. "\n set "
-					. "\n thread_block_list='" . $new_list . "'"
-					. " where user_id='0'",UPDATE); 	
-				perform_query("update user set is_banned=0, ban_expire_time=null where user_id='$user_id'",UPDATE);
+	$row = perform_query("select * from ban where user_id=".$user_id,SELECT);
+	if ($row) {
+		if ($row->type == "perm_ban") {$state = "You are banned";}
+		if ($row->type == "perm_mute") {$state = "You are muted";}
+		if ($row->type == "ban") {$state = "Your are banned until";}
+		if ($row->type == "mute") {$state = "Your are muted until";}
+		if ($row->type == "wiped") {$state = "New accounts not allowed";}
+		
+		if ($row->type == "ban" || $row->type == "mute") {
+			$d1 = time();
+			$d2 = strtotime($row->expires);	
+			if ($d1 > $d2) {			
+                perform_query("delete from ban where user_id='" . $user_id . "'",DELETE); 
 				return 0;
 			} else {
-				$dtime = new DateTime($row->ban_expire_time);
+				$dtime = new DateTime($row->expires);
 				$dtime->setTimeZone(new DateTimeZone($settings->time_zone));
 				$timestamp = $dtime->format($settings->datetime_format);  
-				return intext("You are $state until")." ". $timestamp;
+				return intext("$state")." ". $timestamp;
 			}
 		} else {
-			return intext("You are $state");
+			return intext("$state");
 		}
 	} else {
 		return 0;
-	}   
+	}
 }
 
 function IsMod($user_id) {		

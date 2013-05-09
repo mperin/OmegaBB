@@ -1,5 +1,5 @@
 <?php
-/*OmegaBB 0.9.2*/
+/*OmegaBB*/
 
 //a collection of miscellaneous functions moved into their own source file to reduce memory usage
  
@@ -73,7 +73,7 @@ function GetThreadPage($thread_id,$offset,$bot=0) {
    
    $top_limit = ($offset * $settings->posts_per_page) + $settings->posts_per_page;
    $bottom_limit = ($offset * $settings->posts_per_page);
-   $first_query = "SELECT * FROM post WHERE thread_id = $thread_id AND reply_num > $bottom_limit AND reply_num <= $top_limit ORDER BY reply_num DESC ";
+   $first_query = "SELECT * FROM post WHERE thread_id = $thread_id AND needs_approval = 0 AND reply_num > $bottom_limit AND reply_num <= $top_limit ORDER BY reply_num DESC ";
 	   
    $cur = perform_query($first_query, MULTISELECT);
    
@@ -249,7 +249,7 @@ function GetForums() {
 		   $thread_count[$i]++;
 		}		
 
-		$cur = perform_query("SELECT * FROM thread WHERE forum_id = $forum_array[$i] and state != 2 and state != 3 and state != 4 ORDER BY thread_id DESC LIMIT 11",MULTISELECT);	   
+		$cur = perform_query("SELECT * FROM thread WHERE needs_approval = 0 and forum_id = $forum_array[$i] and state != 2 and state != 3 and state != 4 ORDER BY thread_id DESC LIMIT 11",MULTISELECT);	   
 		while ($row = mysql_fetch_array( $cur )) {
 		   $row_info .=  $row["thread_id"] . "^?" . $row["title"] . "^?" . $row["state"] . "^?";
 		   $thread_count[$i]++;
@@ -265,6 +265,44 @@ function GetForums() {
 	}
 	
 	return ($header_string . $ret_value);
+}
+
+function GetPage($page, $forum_id) {
+    global $settings;
+	if ($settings->must_login_to_see_forum && (Check_Auth() <= 0)) {return "-1^?".intext("You must sign in to see the forums");}
+	if (lockdown_button_check(MUSTLOGIN) && (Check_Auth() <= 0)) {return "-1^?".intext("You must sign in to see the forums");}
+	if (!IsValidForum($forum_id)) {return "-1^?".intext("Invalid forum");}
+	
+	if ($forum_id == 12) {
+	   $user_id = Check_Auth();
+	   $row = perform_query("select my_private_threads from user where user_id='$user_id'", SELECT);
+	   if (!$row) { 
+		   $thread_count[11] = 0;
+	   } else {
+		   $row_info = "";		   
+		   $private_threads_array = explode(",",$row->my_private_threads);
+		   $start = (count($private_threads_array) - 1) - ($page * 10);
+		   for ($j = $start; $j > $start - 11; $j--) {
+			  if ($j < 0) {break;}
+			  if ($private_threads_array[$j] < 0) { $private_threads_array[$j] *= -1;}  //make it positive if it's negative
+			  $row2 = perform_query("select * from thread where thread_id='" . $private_threads_array[$j] . "'", SELECT);
+			  $row_info .=  $row2->forum_id . "^?" . $row2->thread_id . "^?" . $row2->title . "^?" . $row2->state . "^?";
+			  $count++;
+		   }
+		   $ret_value .=  $row_info;
+	   }
+	} else {		   
+	    $row = perform_query("SELECT count( * ) as total_stickies FROM thread where forum_id = $forum_id and (state = 3 || state = 4)");
+	
+		$sql_offset = ($page * 10) - $row->total_stickies;
+		$cur = perform_query("select * from thread where needs_approval = 0 and forum_id = $forum_id and state != 2 and state != 3 and state != 4 ORDER BY thread_id DESC LIMIT 11 OFFSET $sql_offset",MULTISELECT);    	   
+		   
+		while ($row = mysql_fetch_array( $cur )) {
+		   $row_info .=  $row["forum_id"] . "^?" . $row["thread_id"] . "^?" . $row["title"] . "^?" . $row["state"] . "^?";
+		   $count++;
+		}
+	}
+	return ($forum_id  . "^?" . $page . "^?" . $count . "^?" . $row_info);
 }
 
 function GetPT($user_id) {
@@ -336,20 +374,27 @@ function GetProfile($user_id) {
 	$fb_link = $row->facebook_link;
 	$li_link = $row->linkedin_link;
 	$li_id = $row->linkedin_id;
-    $is_banned = $row->is_banned;
-	$ban_expire_time = $row->ban_expire_time;
+	$is_banned = 0;
 	
 	$dtime = new DateTime($row->join_date);
 	$dtime->setTimeZone(new DateTimeZone($settings->time_zone));
 	preg_match('/[^ ]*/',$settings->datetime_format,$matches);
 	$join_date = $dtime->format($matches[0]);  
 
-	if ($ban_expire_time != null) {		
-	   $dtime = new DateTime($ban_expire_time);
-	   $dtime->setTimeZone(new DateTimeZone($settings->time_zone));
-	   $ban_expire_time = $dtime->format($settings->datetime_format);  
+	$row = perform_query("select * from ban where user_id=".$user_id,SELECT);
+	if ($row) {
+		if ($row->type == "perm_ban") {$is_banned = 2;}
+		if ($row->type == "perm_mute") {$is_banned = 1;}
+		if ($row->type == "ban") {$is_banned = 2;}
+		if ($row->type == "mute") {$is_banned = 1;}
+		
+		if ($row->type == "ban" || $row->type == "mute") {
+			$dtime = new DateTime($row->expires);
+			$dtime->setTimeZone(new DateTimeZone($settings->time_zone));
+			$ban_expire_time = $dtime->format($settings->datetime_format);  
+		}
     }
-	  
+	
 	if (!IsAdmin(Check_Auth())) {
 	   $last_ip = "";
     }
@@ -358,7 +403,7 @@ function GetProfile($user_id) {
 	if ((!$hide_online_status)  || (IsAdmin(Check_Auth()))) {
 	    $row2 = perform_query("select last_activity, session from session where user_id='". $user_id . "'",SELECT);
         if (!$row2) {
-		    $last_online = intext("never");
+		    $last_online = intext("over six months ago");
 		} else {
 			$d1 = time() ;
 			$d2 = strtotime($row2->last_activity);

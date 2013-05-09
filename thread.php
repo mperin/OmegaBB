@@ -1,5 +1,5 @@
  <?php
-/*OmegaBB 0.9.2*/
+/*OmegaBB*/
 
 	include('config.php');
     include('common.php');
@@ -11,7 +11,7 @@
     $page_num=GetParam($_REQUEST,'page','');	
 
 	if ($page_num == "") { $page_num = 0;} 
-	$page_is_div = -1;
+	$page_is_div = 0;
 	
 	if (!lockdown_button_check(SITEDOWN)) {
 	    if(is_numeric($thread_id)) { 

@@ -1,5 +1,5 @@
 <?php
-	/*OmegaBB 0.9.2*/
+	/*OmegaBB*/
 	include('omegabb.php');
 
 	$avatar_number=GetParam($_REQUEST,'avatar_number','');

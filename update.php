@@ -1,5 +1,5 @@
 <?php
-/*OmegaBB 0.9.2*/
+/*OmegaBB*/
 header( 'Cache-control: no-cache' );
 header( 'Cache-control: no-store' );
 header( 'Pragma: no-cache' );
@@ -7,7 +7,7 @@ header( 'Expires: 0' );
 
 include('config.php');
 include('common.php');
-
+	
 $thread_watching=GetParam($_REQUEST,'thread_watching','');
 $hitf=GetParam($_REQUEST,'hitf','');
 $last_update=GetParam($_REQUEST,'last_update','');
@@ -17,7 +17,7 @@ $last_wiki_revision=GetParam($_REQUEST,'last_wiki_revision','');
 
 $auth_ret = Check_Auth();
 
-if( $auth_ret <= 0) {
+if($auth_ret <= 0) {
    echo "0^?".intext("Not signed in");
    return;
 }   
@@ -41,14 +41,50 @@ if ($thread_watching && $hipt) {
    $output .= "^*0^?0^?0^?0^?";
 }
 
-//both are set when you're watching an article and are on the first page of that article
-if ($thread_watching && ($last_wiki_revision != "")) {
-   $output .= "^*" . CheckForWikiUpdate($thread_watching,$last_wiki_revision,$auth_ret);
-}  else {
-   $output .= "^*0";
+$output .= "^*" . SignalsCheck($thread_watching,$last_wiki_revision,$auth_ret);
+
+$output .= "^*" . CheckEventQueue($auth_ret); 
+
+echo "5^*" . $output;
+
+function SignalsCheck($thread_watching,$last_wiki_revision,$user_id) {
+    //returns bitfield, first digit = site reload, second digit = forum reload, 3rd digit = thread reload
+    $ret_val = 0;
+	
+	if ($thread_watching && ($last_wiki_revision != "")) {
+	   $ret_val += CheckForWikiUpdate($thread_watching,$last_wiki_revision,$user_id);
+	}
+
+
+	
+	return $ret_val;
 }
 
-echo "4^*" . $output;
+function CheckForWikiUpdate($thread_watching,$last_wiki_revision,$user_id) {
+    $flag = 0; 
+    $wiki_query = "select * from post where reply_num = 1 and thread_id=$thread_watching and author_id != $user_id and revision > $last_wiki_revision";
+    $row = perform_query($wiki_query,SELECT);    	  
+    if ($row) {
+	   $flag = 1;
+	}
+
+    return $flag;
+}
+
+
+function CheckEventQueue($user_id) {
+    $count = 0;
+	$ret_value = "";
+	
+	if (IsMod($user_id)) {
+	   $cur = perform_query("select * from queue", MULTISELECT);
+	   while ($row = mysql_fetch_array( $cur )) {  
+	       $count++;
+		   $ret_value .=  $row["event_id"] . "^?";
+	   }
+	}
+	return $count . "^?" . $ret_value;
+}
 
 function update_read_threads($user_id,$nrt) {
     $temp_array = array();
@@ -74,27 +110,28 @@ function update_read_threads($user_id,$nrt) {
    return $ret_value;
 }
 
+//Called when the user is viewing a thread, appends the thread with any new postings since $hipt.
 function GetThreadUpdate($thread_watching,$hipt) {
    global $userid;
    global $settings;
-   
+
    $count = 0;   
    $high_post_num = 0; 
    $highest_reply_num = 0;
    $ret_value = "";
-				
+
    $row = perform_query("select forum_id, block_allow_list from thread where thread_id=$thread_watching", SELECT);
-  
+
    //if forum_id = 12, ensure they're still a member
    if ($row->forum_id == 12){
-   		if (!preg_match('/,' . Check_Auth() . ';/',$row->block_allow_list)) { 
+   		if (!preg_match('/,' . Check_Auth() . ';/',$row->block_allow_list)) {
            return ("0^?Not a member of this PT");
         }
    }
-   
-   $first_query = "select * from post where reply_num > 1 and thread_id=$thread_watching and message_id > $hipt";
-   $cur = perform_query($first_query,MULTISELECT);    	   
-           
+
+   $first_query = "select * from post where reply_num > 1 and needs_approval = 0 and thread_id=$thread_watching and message_id > $hipt";
+   $cur = perform_query($first_query,MULTISELECT);
+
    while ($row = mysql_fetch_array( $cur )) {  
       if ($settings->edit_time == 0) {
 	     $can_edit = 0;
@@ -120,19 +157,8 @@ function GetThreadUpdate($thread_watching,$hipt) {
    return $count . "^?" . $highest_reply_num . "^?" . $high_post_num . "^?" . $ret_value;
 }
 
-function CheckForWikiUpdate($thread_watching,$last_wiki_revision,$user_id) {
-    $flag = 0; //When flag is set to 1, then the user is watching an article that had a wiki update.  
-               //Sending flag=1 will cause a full thread page load for the user to see the update
-
-    $wiki_query = "select * from post where reply_num = 1 and thread_id=$thread_watching and author_id != $user_id and revision > $last_wiki_revision";
-    $row = perform_query($wiki_query,SELECT);    	  
-    if ($row) {
-	   $flag = 1;
-	}
-
-    return $flag;
-}
-
+//called only when the user first logs in, it goes through all of the user's watched threads and
+//gives how many posts they contain
 function SendUnreadThreads($user_id) {
    define('CHUNK_SIZE',20);  
    $temp_array = array();
@@ -185,6 +211,7 @@ function SendUnreadThreads($user_id) {
    return ($highest_post_id . "^?" . $total ."^?" . $ret_value);
 }
 
+//using $last_update, this goes through all recently updated threads (that the user is also watching) sending their post count
 function SendUpdatedThreads($user_id,$last_update) {
    $ret_value = "";
    $total = 0;
@@ -227,6 +254,7 @@ function SendUpdatedThreads($user_id,$last_update) {
    return ($highest_post_id . "^?" . $real_count ."^?" . $ret_value); 
 }
 
+//using $hitf it displays any new threads in the forum
 function GetForumsDeltas($hitf) {
    global $settings;
    $new_hitf = 0;
@@ -247,7 +275,7 @@ function GetForumsDeltas($hitf) {
 	   $extra .= "and forum_id != 13 ";
 	}	
    
-   $cur = perform_query("select * from thread where thread_id > $hitf $extra ORDER BY thread_id",MULTISELECT);    	   
+   $cur = perform_query("select * from thread where needs_approval = 0 and thread_id > $hitf $extra ORDER BY thread_id",MULTISELECT);    	   
 
    while ($row = mysql_fetch_array( $cur )) {
 	  if ($row["thread_id"] > $new_hitf) { $new_hitf = $row["thread_id"]; }

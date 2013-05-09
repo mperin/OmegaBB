@@ -125,6 +125,7 @@ $settings->permalinks_enabled = true;  //If set, each public thread and article 
                                     //Must be enabled if bots_allowed is set. 
 $settings->new_accounts_allowed = true;  //If you don't want to allow new accounts to be made, set this to 0.  
 $settings->may_undelete = true;  //If set, a moderator may undelete soft-deleted posts or threads.  
+$settings->post_approval = false; //If set, new users (status = 0) will need to have their postings approved by a moderator
 
 //Permissions based on status level.  0: new user, 1: regular user, 2: star user, 3: moderator, 5: administrator.
 $settings->status_to_start_threads = 0;  //Users must have a status at least this high to start new threads.  
@@ -171,6 +172,7 @@ $settings->prune_watchlist = true;  //If set, threads that have been closed or d
 $settings->prune_session_table = true; //Session rows that have been inactive for over a month will be deleted
 $settings->prune_closed_threads = -1; //Closed threads will be deleted from the database after the number of days specified.  To never auto-delete closed threads set it to -1.
 	                                  //Note: the system does this check once a week, so deletions won't happen exactly at the time specified									
+$settings->prune_old_pt = 0;  //Old pts will be deleted after this number of months of inactivity, set to 0 to never delete old PTs.
 
 //Miscellaneous options
 $settings->name_of_status_2 = "Star Member";  //This is the name of the status with a rank above "regular user" (1) but below "moderator" (3).  

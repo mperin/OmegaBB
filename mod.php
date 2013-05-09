@@ -1,5 +1,5 @@
 <?php
-/*OmegaBB 0.9.2*/
+/*OmegaBB*/
 
 //moderation functions
 
@@ -24,8 +24,7 @@ $new_name=GetParam($_REQUEST,'new_name','');
 $time=GetParam($_REQUEST,'time','');
 $dupe_check=GetParam($_REQUEST,'dupe_check','');
 $wipe_type=GetParam($_REQUEST,'wipe_type','');
-$ip=GetParam($_REQUEST,'ip','');
-$fb=GetParam($_REQUEST,'fb','');
+$data=GetParam($_REQUEST,'data','');
 $file_id=GetParam($_REQUEST,'file_id','');
 
 $auth_ret = Check_Auth();
@@ -292,19 +291,12 @@ if ($action == "delete_avatar") {
    $return_stuff = DeleteAvatar($user_id,$message_id);
 }    	
 
-if ($action == "ipunban") {
+if ($action == "unbanwiped") {
 	if (!IsAdmin($auth_ret)) {
 	   echo "-1^?".intext("You must be an administrator to do this");
 	   return;
 	}   
-   $return_stuff = IPUnban($ip);
-}    	
-if ($action == "fbunban") {
-	if (!IsAdmin($auth_ret)) {
-	   echo "-1^?".intext("You must be an administrator to do this");
-	   return;
-	}   
-   $return_stuff = FBUnban($fb);
+   $return_stuff = UnbanWiped($data);
 }    		
 
 if ($action == "change_username") {
@@ -547,22 +539,8 @@ function Unban($user_id) {
 	$row = perform_query("select * from user where user_id='". $user_id . "'",SELECT); 
     if (!$row) {return "-1^?".intext("User not found");}
 	
-	$row2 = perform_query("select thread_block_list from user where user_id='0'",SELECT); 
-	$old_list = $row2->thread_block_list;
+	perform_query("delete from ban where user_id='$user_id'",DELETE);
 
-	$new_list = preg_replace('/,' . $user_id . '(,|$)/', '$1', $old_list);  
-
-	perform_query("update user "
-    	. "\n set "
-		. "\n thread_block_list='" . $new_list . "'"
-        . " where user_id='0'",UPDATE); 	
-		
-	perform_query("update user "
-		. "\n set "
-		. "\n is_banned=0,"
-		. "\n ban_expire_time=NULL"					
-		. " where user_id='$user_id'",UPDATE); 		
-		
 	return "1^?" . intext("Unbanned") . " %%u" . $user_id . ":" . $row->username . ";^?";
 }
 
@@ -570,105 +548,59 @@ function UnMute($user_id) {
 	$row = perform_query("select * from user where user_id='". $user_id . "'",SELECT); 
     if (!$row) {return "-1^?".intext("User not found");}
 	
-	$row2 = perform_query("select thread_block_list from user where user_id='0'",SELECT); 
-	$old_list = $row2->thread_block_list;
-
-	$new_list = preg_replace('/,' . $user_id . '(,|$)/', '$1', $old_list);  
-
-	perform_query("update user "
-    	. "\n set "
-		. "\n thread_block_list='" . $new_list . "'"
-        . " where user_id='0'",UPDATE); 	
-
-	perform_query("update user "
-		. "\n set "
-		. "\n is_banned=0,"
-		. "\n ban_expire_time=NULL"			
-		. " where user_id='$user_id'",UPDATE); 		
+	perform_query("delete from ban where user_id='$user_id'",DELETE);
 		
 	return "1^?" . intext("UnMuted") . " %%u" . $user_id . ":" . $row->username . ";^?";
 }
 
-function IPUnban($ip_address) {
-	$row = perform_query("select thread_block_list from user where user_id='0'",SELECT); 
-	$old_list = $row->thread_block_list;
-
-	$new_list = preg_replace('/,-1;' . $ip_address . '-[0-9a-f]*(,|$)/', '$1', $old_list);  
-
-	perform_query("update user "
-    	. "\n set "
-		. "\n thread_block_list='" . $new_list . "'"
-        . " where user_id='0'",UPDATE); 	
-
-    return "1^?" . intext("Unbanned IP address");
-}
-
-function FBUnban($fb_id) {
-	$row = perform_query("select thread_block_list from user where user_id='0'",SELECT); 
-	$old_list = $row->thread_block_list;
-
-	$new_list = preg_replace('/,-2;' . $fb_id . '(,|$)/', '$1', $old_list);  
-
-	perform_query("update user "
-    	. "\n set "
-		. "\n thread_block_list='" . $new_list . "'"
-        . " where user_id='0'",UPDATE); 	
-		
-    return "1^?" . intext("Unbanned Facebook account");
+function UnbanWiped($ban_id) {
+	perform_query("delete from ban where ban_id='$ban_id'",DELETE);
+	
+    return "1^?" . intext("Unbanned ban id $ban_id") . " delete from ban where ban_id='$ban_id'";
 }
 
 function Ban($time,$user_id,$thread_id,$dupe_check) {
 	$additional_bans = 0;
 	$extra = "";
 	$return_code = 1;
+	$fb_li_id = "";
+	$expires = "";
+	
 	if ($dupe_check == 0) {$return_code = 3;}
 	
-	$row = perform_query("select last_ip, username from user where user_id='". $user_id . "'",SELECT); 
+	$row = perform_query("select facebook_id, linkedin_id, last_ip, username from user where user_id='". $user_id . "'",SELECT); 
 	if (!$row) {return "-1^?".intext("User not found");}
-	$entry = "," . $user_id;
-	$username = mysql_real_escape_string($row->username);
-
-	$row2 = perform_query("select thread_block_list from user where user_id='0'",SELECT); 
-	$old_list = $row2->thread_block_list;
 	
-	perform_query("update user " 
-    	. "\n set "
-		. "\n thread_block_list='" . $old_list . $entry . "'"
-        . " where user_id='0'",UPDATE); 	
+	if ($row->facebook_id) {$fb_li_id = $row->facebook_id;}
+	if ($row->linkedin_id) {$fb_li_id = $row->linkedin_id;}
+	
+    $username = mysql_real_escape_string($row->username);	
+
+	$row2 = perform_query("select cookie from session where user_id='". $user_id . "'",SELECT); 
 		
-	if ($time != "permanent") {
-		perform_query("update user "
-			. "\n set "
-			. "\n is_banned=2,"			
-			. "\n ban_expire_time=DATE_ADD(now(),INTERVAL $time DAY)"	
-			. " where user_id='$user_id'",UPDATE); 	
-		perform_query("update session set session=0 where user_id=$user_id",DELETE);		
-		if ($dupe_check) {
-			//check for other accounts with the same IP and ask the mod if they want them banned as well
-			$cur = perform_query("select user_id, username from user where is_banned = 0 and last_ip ='".$row->last_ip."'",MULTISELECT);
-			while ($row3 = mysql_fetch_array( $cur )) {
-			    $return_code = 2;
-				$additional_bans++;
-				$extra .= $row3["user_id"] . "^?" . $row3["username"] . "^?";
-			}
-		}		
-	} else { 
-        perform_query("update user "
-			. "\n set "
-			. "\n is_banned=2,"
-			. "\n ban_expire_time=NULL"			
-			. " where user_id='$user_id'",UPDATE); 		
-		perform_query("update session set session=0 where user_id=$user_id",DELETE);	
-		if ($dupe_check) {
-			//check for other accounts with the same IP and ask the mod if they want them banned as well
-			$cur = perform_query("select user_id, username from user where is_banned = 0 and last_ip ='".$row->last_ip."'",MULTISELECT);
-			while ($row3 = mysql_fetch_array( $cur )) {
-			    $return_code = 2;
-				$additional_bans++;
-				$extra .= $row3["user_id"] . "^?" . $row3["username"] . "^?";
-			}
+	if ($time == "permanent") {$ban_type = "perm_ban"; $expires="''";} else {$ban_type = "ban"; $expires = " DATE_ADD(now(),INTERVAL $time DAY)";}
+	
+	perform_query("insert ban "
+		. "\n set "
+		. "\n type='$ban_type',"
+		. "\n user_id='$user_id',"
+		. "\n cookie='".$row2->cookie."',"
+		. "\n fb_li_id='$fb_li_id',"
+		. "\n expires=$expires,"	
+		. "\n ip_address='".$row->last_ip."'",INSERT);
+
+	perform_query("update session set session=0 where user_id=$user_id",DELETE);	
+	
+	if ($dupe_check) {
+		//check for other accounts with the same IP and ask the mod if they want them banned as well
+		$cur = perform_query("select user_id, username from user where is_banned = 0 and last_ip ='".$row->last_ip."'",MULTISELECT);
+		while ($row3 = mysql_fetch_array( $cur )) {
+			$return_code = 2;
+			$additional_bans++;
+			$extra .= $row3["user_id"] . "^?" . $row3["username"] . "^?";
 		}
 	}
+
 	if ($time == "permanent") {
        $message = intext("Banned") . " %%u" . $user_id . ":" . $username . ";"; 
 	} else {
@@ -681,53 +613,42 @@ function Mute($time,$user_id,$thread_id,$dupe_check) {
 	$additional_bans = 0;
 	$extra = "";
 	$return_code = 1;
+	$fb_li_id = "";
+	$expires = "";
+	
 	if ($dupe_check == 0) {$return_code = 3;}
 	
-	$row = perform_query("select last_ip, username from user where user_id='". $user_id . "'",SELECT); 
+	$row = perform_query("select facebook_id, linkedin_id, last_ip, username from user where user_id='". $user_id . "'",SELECT); 
 	if (!$row) {return "-1^?".intext("User not found");}
-	$entry = "," . $user_id;
-	$username = mysql_real_escape_string($row->username);
-
-	$row2 = perform_query("select thread_block_list from user where user_id='0'",SELECT); 
-	$old_list = $row2->thread_block_list;
 	
-	perform_query("update user "
-    	. "\n set "
-		. "\n thread_block_list='" . $old_list . $entry . "'"
-        . " where user_id='0'",UPDATE); 	
+	if ($row->facebook_id) {$fb_li_id = $row->facebook_id;}
+	if ($row->linkedin_id) {$fb_li_id = $row->linkedin_id;}
+	
+    $username = mysql_real_escape_string($row->username);	
+
+	$row2 = perform_query("select cookie from session where user_id='". $user_id . "'",SELECT); 
 		
-	if ($time != "permanent") {
-		perform_query("update user "
-			. "\n set "
-			. "\n is_banned=1,"			
-			. "\n ban_expire_time=DATE_ADD(now(),INTERVAL $time DAY)"
-			. " where user_id='$user_id'",UPDATE); 	
-		if ($dupe_check) {
-			//check for other accounts with the same IP and ask the mod if they want them banned as well
-			$cur = perform_query("select user_id, username from user where is_banned = 0 and last_ip ='".$row->last_ip."'",MULTISELECT);
-			while ($row3 = mysql_fetch_array( $cur )) {
-			    $return_code = 7;
-				$additional_bans++;
-				$extra .= $row3["user_id"] . "^?" . $row3["username"] . "^?";
-			}
-		}		
-	} else { 
-        perform_query("update user "
-			. "\n set "
-			. "\n is_banned=1,"
-			. "\n ban_expire_time=NULL"			
-			. " where user_id='$user_id'",UPDATE); 		
-		perform_query("update session set session=0 where user_id=$user_id",DELETE);	
-		if ($dupe_check) {
-			//check for other accounts with the same IP and ask the mod if they want them banned as well
-			$cur = perform_query("select user_id, username from user where is_banned = 0 and last_ip ='".$row->last_ip."'",MULTISELECT);
-			while ($row3 = mysql_fetch_array( $cur )) {
-			    $return_code = 7;
-				$additional_bans++;
-				$extra .= $row3["user_id"] . "^?" . $row3["username"] . "^?";
-			}
+	if ($time == "permanent") {$ban_type = "perm_mute"; $expires="''";} else {$ban_type = "mute"; $expires = " DATE_ADD(now(),INTERVAL $time DAY)";}
+	
+	perform_query("insert ban "
+		. "\n set "
+		. "\n type='$ban_type',"
+		. "\n user_id='$user_id',"
+		. "\n cookie='".$row2->cookie."',"
+		. "\n fb_li_id='$fb_li_id',"
+		. "\n expires=$expires,"	
+		. "\n ip_address='".$row->last_ip."'",INSERT);
+	
+	if ($dupe_check) {
+		//check for other accounts with the same IP and ask the mod if they want them banned as well
+		$cur = perform_query("select user_id, username from user where is_banned = 0 and last_ip ='".$row->last_ip."'",MULTISELECT);
+		while ($row3 = mysql_fetch_array( $cur )) {
+			$return_code = 7;
+			$additional_bans++;
+			$extra .= $row3["user_id"] . "^?" . $row3["username"] . "^?";
 		}
 	}
+
 	if ($time == "permanent") {
        $message = intext("Muted") . " %%u" . $user_id . ":" . $username . ";"; 
 	} else {
@@ -740,39 +661,40 @@ function WipeAccount($user_id,$wipe_type,$dupe_check) {
     global $settings;
     $additional_bans = 0;
 	$extra = "";
+	$fb_li_id = "";
 	$return_code = 1;
 	if ($dupe_check == 0) {$return_code = 4;}
 	
-	$row = perform_query("select username, facebook_id, total_avatars, last_ip from user where user_id='". $user_id . "'", SELECT); 
+	$row = perform_query("select username, facebook_id, linkedin_id, total_avatars, last_ip from user where user_id='". $user_id . "'", SELECT); 
 	$username = $row->username;
+	$last_ip = $row->last_ip;
 	
 	//Delete account
 	if (preg_match('/1.../',$wipe_type)) {
        	perform_query("DELETE FROM user WHERE user_id=". $user_id,DELETE); 
 	}
-	
+
 	//Ban last ip address
-	if (preg_match('/.1../',$wipe_type)) {
-		$row2 = perform_query("select thread_block_list from user where user_id='0'", SELECT); 
-		$old_list = $row2->thread_block_list;
-		
-		//if they are a facebook-connected account, ban their facebook account in addition to their ip address
-		$entry = "";
-		if ($row->facebook_id) {
-		   $entry .= ",-2;" . $row->facebook_id;
-		}
+	if (preg_match('/.1../',$wipe_type)) {	
+		if ($row->facebook_id) {$fb_li_id = $row->facebook_id;}
+		if ($row->linkedin_id) {$fb_li_id = $row->linkedin_id;}
+	    
 		$row3 = perform_query("select cookie from session where user_id = $user_id",SELECT);
-		if ($row->last_ip) {
-		   $entry .= ",-1;" . $row->last_ip . "-" . $row3->cookie;
-		}
-		perform_query("update user "
-				. "\n set "
-				. "\n thread_block_list='" . $old_list . $entry . "'"
-				. " where user_id='0'",UPDATE); 	  
+        
+		if ($fb_li_id != "" || $last_ip != "") {
+		
+		perform_query("insert ban "
+			. "\n set "
+			. "\n type='wiped',"
+			. "\n cookie='".$row3->cookie."',"
+			. "\n fb_li_id='$fb_li_id',"
+			. "\n user_id='-1',"
+			. "\n ip_address='$last_ip'",INSERT);
+	    }
 	}
 	
-	perform_query("delete from session where user_id='" . $user_id . "'",UPDATE); 
-			
+	perform_query("delete from session where user_id='" . $user_id . "'",DELETE); 
+
 	//Delete all posts made by this account
 	if (preg_match('/..1./',$wipe_type)) {
 	    $cur2 = perform_query("select message_id from post where author_id=".$user_id, MULTISELECT);
