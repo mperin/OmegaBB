@@ -1,5 +1,5 @@
 /* 
-OmegaBB 0.9.2 (build 215)  Copyright (c) 2013, Ryan Smiderle.  All rights reserved.
+OmegaBB developmental version - build 217  Copyright (c) 2013, Ryan Smiderle.  All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted
 provided that the following conditions are met:
@@ -539,7 +539,7 @@ function show_forum() {
 	$('midrow').innerHTML = "";
 	
 	if (!isNaN(globals.current_forum_tab)) { //it's one of the public forums tab
-	    if (cache.forum_is_set == 0 ) {
+	    if (cache.forum_is_set == 0) {
 		   hide_footer();
 		   $('top_area').innerHTML = '<div style="width:100%;max-width:1250px;padding-top:10%;font-size:22px;font-weight:bold;color:#bbb;text-align:center;"><img border="0" src="img/indicator.gif"> </div>';
 		   if (globals.popforum_mutex) {return;}
@@ -556,7 +556,7 @@ function show_forum() {
 		   start += settings.forums_per_tab - (settings.total_forums % settings.forums_per_tab);
 		}		
 	} else if (globals.current_forum_tab == "a") { //it's the articles tab
-	    if (cache.forum_is_set == 0 ) {
+	    if (cache.forum_is_set == 0) {
 		   hide_footer();
 		   $('top_area').innerHTML = '<div style="width:100%;max-width:1250px;padding-top:10%;font-size:22px;font-weight:bold;color:#bbb;text-align:center;"><img border="0" src="img/indicator.gif"> </div>';
 		   if (globals.popforum_mutex) {return;}
@@ -568,7 +568,7 @@ function show_forum() {
 	    end = 13;
 	    start = 12;	
 	} else 	if (globals.current_forum_tab == "pt") { //it's the private forums tab
-		if (cache.pt_is_set == 0 ) {
+		if (cache.pt_is_set == 0) {
 			hide_footer();
 			$('top_area').innerHTML = '<div style="width:100%;max-width:1250px;padding-top:10%;font-size:22px;font-weight:bold;color:#bbb;text-align:center;"><img border="0" src="img/indicator.gif"> </div>';
 		    if (globals.poppt_mutex) {return;}
@@ -596,7 +596,7 @@ function show_forum() {
     for (i = 0; i < 10; i++) {
 	   display_string += '<tr>';
 	   for (j = start; j < end; j++) {
-	      if (!(settings.enable_private_threads) && (j == 11)) { continue; }		
+	      if (!(settings.enable_private_threads) && (j == 11)) {continue;}		
 		  x = i + (cache.current_page[j] * 10);		  
 		  if ((cache.thread_title[j][x] != undefined) && (cache.thread_title[j][x] != "&nbsp")) {
              if ((cache.thread_state[j][x] == 3) || (cache.thread_state[j][x] == 4)) {
@@ -613,7 +613,7 @@ function show_forum() {
 
     display_string += '<tr>';
     for (j = start; j < end; j++) {
-	   if (!(settings.enable_private_threads) && (j == 11)) { continue; }		  
+	   if (!(settings.enable_private_threads) && (j == 11)) {continue;}		  
 	   display_string += '<td class="scroll"><font size="+1">';
 	   if ((cache.thread_title[j][(cache.current_page[j] + 1) * 10] != "&nbsp") && (cache.thread_title[j][(cache.current_page[j] + 1) * 10] != undefined) ) {
 		  display_string += '<a onclick="javascript:forum_scroll('+ j + "," + (cache.current_page[j] + 1) +',0)" >&#9660;</a>'; 
@@ -654,20 +654,19 @@ function populate_forum(originalRequest) {
 				cache.thread_title[i][j] = temp_array[x];
 				cache.thread_id[i][j] = parseInt(temp_array[x-1]);
 				cache.thread_state[i][j] = parseInt(temp_array[x+1]);
-				if (parseInt(temp_array[x-1]) > globals.highest_thread_in_forums) { globals.highest_thread_in_forums = parseInt(temp_array[x-1]); }
+				if (parseInt(temp_array[x-1]) > globals.highest_thread_in_forums) {globals.highest_thread_in_forums = parseInt(temp_array[x-1]);}
 				x += 3;
 			}
 		}
 		globals.hitf_semaphore--;	
-		if (globals.is_connected && (globals.hitf_semaphore == 0)) { updater(); }		
 		cache.forum_is_set = 1;
-		globals.popforum_mutex = 0;
 		show_forum()
 	} else {
 		globals.hitf_semaphore--;
-	    globals.popforum_mutex = 0;
 		$('top_area').innerHTML = "<p class='system'>" +temp_array[1]+ "</p>";
 	}
+	if (globals.is_connected && (globals.hitf_semaphore == 0)) {updater();}		
+	globals.popforum_mutex = 0;	
 }
 
 function populate_pt(originalRequest) {
@@ -684,19 +683,18 @@ function populate_pt(originalRequest) {
 			cache.thread_title[11][j] = temp_array[x];
 			cache.thread_id[11][j] = parseInt(temp_array[x-1]);
 			cache.thread_state[11][j] = parseInt(temp_array[x+1]);
-			if (parseInt(temp_array[x-1]) > globals.highest_thread_in_forums) { globals.highest_thread_in_forums = parseInt(temp_array[x-1]); }
+			if (parseInt(temp_array[x-1]) > globals.highest_thread_in_forums) {globals.highest_thread_in_forums = parseInt(temp_array[x-1]);}
 			x += 3;
 		}
 		globals.hitf_semaphore--;
-		if (globals.is_connected && (globals.hitf_semaphore == 0)) { updater(); }		
 		cache.pt_is_set = 1;
-		globals.poppt_mutex = 0;
 		show_forum();
 	} else {
 		globals.hitf_semaphore--;
-		globals.poppt_mutex = 0;
 		$('top_area').innerHTML = "<p class='system'>" +temp_array[1]+ "</p>";
 	}
+	if (globals.is_connected && (globals.hitf_semaphore == 0)) {updater();}		
+	globals.poppt_mutex = 0;
 }
 
 function forum_scroll(forum_id, page, silent) {
@@ -714,13 +712,13 @@ function forum_scroll(forum_id, page, silent) {
 
 function add_page_to_cache(originalRequest) {
     var temp_string = originalRequest.responseText;
-    temp_array = temp_string.split("^?");
+    var temp_array = temp_string.split("^?");
 	
 	if (error_code(temp_array)) {alert(temp_array[1]); return;}
 	
-	forum_id = parseInt(temp_array[0]);
-	page = parseInt(temp_array[1]);
-	count = parseInt(temp_array[2]);
+	var forum_id = parseInt(temp_array[0]);
+	var page = parseInt(temp_array[1]);
+	var count = parseInt(temp_array[2]);
 	
 	for (var i = 0; i < count; i++) {
 	   var x = i + (page * 10);
@@ -861,7 +859,7 @@ function display_file_upload2(forum_id){
     var file_types = settings.allowed_file_types.toString()
     file_types = file_types.replace(/,/g,", ");
 	 
-     $('uploadbutton').innerHTML = '<div id="fileblurb">'+intext("Upload file")+':<br>'+intext("allowed file types")+': ' + file_types +'</div>'
+    $('uploadbutton').innerHTML = '<div id="fileblurb">'+intext("Upload file")+':<br>'+intext("allowed file types")+': ' + file_types +'</div>'
 	+ '        <div id="iframe">'
 	+ '            <iframe id="foo_frame_0" src="attach_file.php?forum_id='+forum_id+'" frameborder="" height="50px" scrolling="0"></iframe>'
 	+ '        </div>'
@@ -915,6 +913,14 @@ function refresh_forum(originalRequest){
 		   reset_captcha();
 		}  	
         alert(temp_array[1]);
+		updater();
+		if (settings.enable_forums) {
+		   get_tab("forum"+ (6 - Math.ceil((settings.total_forums / settings.forums_per_tab)))); 
+		} else if (settings.enable_articles) {
+		   get_tab("articles");
+		} else if (settings.enable_private_threads) {
+		   get_tab("pt");
+		}
     }      
 }
 
@@ -1190,8 +1196,12 @@ function populate_thread(originalRequest)
 		}
 		
 		if (temp_array[offset+5] == 1) {
-		   edit_button = '<span id=edit_button'+temp_array[offset+6]+' class="plink" style="margin-left:0px;position:relative;top:-4px;padding-top:6px;"><a onclick="javascript:edit_post('+temp_array[offset+6]+')">'+intext('edit')+'</a></span><br>';
-	    } else {
+		   if (is_wiki_page) {
+		      edit_button = '<span id=edit_button'+temp_array[offset+6]+' class="plink" style="margin-left:0px;position:relative;top:-2px;padding-top:6px;"><a onclick="javascript:edit_wiki('+temp_array[offset+6]+')">'+intext('edit')+'</a></span><br>';
+	       } else {
+		   	  edit_button = '<span id=edit_button'+temp_array[offset+6]+' class="plink" style="margin-left:0px;position:relative;top:-2px;padding-top:6px;"><a onclick="javascript:edit_post('+temp_array[offset+6]+')">'+intext('edit')+'</a></span><br>';
+		   }
+		} else {
 		   edit_button = '';
 	    }
 		
@@ -1210,9 +1220,9 @@ function populate_thread(originalRequest)
 	    if ((is_wiki_page) && (i == 0)) {
 		    if (account_info.status > 2) {
 			   if (edit_button == '') {
-			      edit_button += "<span style='margin-left:0px;position:relative;top:-4px;padding-top:6px;' class='plink' id='delete_button"+temp_array[offset+6]+"'><a onclick=\"javascript:delete_wiki_post("+thread_id+","+globals.wiki_revision+","+parseInt(temp_array[offset+0])+")\">"+intext('delete')+"</a></span>"
+			      edit_button += "<span style='margin-left:0px;position:relative;top:-2px;padding-top:6px;' class='plink' id='delete_button"+temp_array[offset+6]+"'><a onclick=\"javascript:delete_wiki_post("+thread_id+","+globals.wiki_revision+","+parseInt(temp_array[offset+0])+")\">"+intext('delete')+"</a></span>"
 			   } else {
-			      edit_button += "<span style='margin-left:60px;position:relative;top:-22px;padding-top:6px;' class='plink' id='delete_button"+temp_array[offset+6]+"'><a onclick=\"javascript:delete_wiki_post("+thread_id+","+globals.wiki_revision+","+parseInt(temp_array[offset+0])+")\">"+intext('delete')+"</a></span>"
+			      edit_button += "<span style='margin-left:60px;position:relative;top:-23px;padding-top:6px;' class='plink' id='delete_button"+temp_array[offset+6]+"'><a onclick=\"javascript:delete_wiki_post("+thread_id+","+globals.wiki_revision+","+parseInt(temp_array[offset+0])+")\">"+intext('delete')+"</a></span>"
 			   }
 			}
 			display_string = display_string + '<tr> <td class="colone">' + '</td>' +
@@ -1442,7 +1452,7 @@ function show_revision_response(originalRequest) {
 	var tmp_result = temp_array[1].match(/&lt;&lt;&lt;FILE:(.*?)&gt;&gt;&gt;/g);
 	if (tmp_result) {
 	    var file_attachments = '';
-		for (x = 0; x < tmp_result.length; x++) {
+		for (var x = 0; x < tmp_result.length; x++) {
 			tmp_filename = tmp_result[x].replace(/&lt;&lt;&lt;FILE:(.*?)\|.*?&gt;&gt;&gt;/,'$1');      
             tmp_fileid = tmp_result[x].replace(/&lt;&lt;&lt;FILE:.*?\|(.*?)&gt;&gt;&gt;/,'$1');  				
 			file_attachments += '<a href="file.php?id=' +tmp_fileid+ '">' + tmp_filename + '</a><br>';			
@@ -1679,15 +1689,56 @@ function save_edit_response(originalRequest) {
 	   $('edit_button' + globals.temp_number).innerHTML = '<a onclick="javascript:edit_post('+globals.temp_number+')">edit</a>'
 	   return;
 	}
+
+	temp_array[2] = temp_array[2].replace(/\\r/g, '');  //replace is for IE
+	temp_array[2] = temp_array[2].replace(/(&lt;&lt;&lt;FILE:.*?&gt;&gt;&gt;)/g,'<span style="display:none;">$1</span>');
+	$('msg' + globals.temp_number).innerHTML = temp_array[2]
+	$('edit_button' + globals.temp_number).innerHTML = '<a onclick="javascript:edit_post('+globals.temp_number+')">edit</a>'
+	updater();
+}
+
+function edit_wiki(post_id) {
+   var temp_string = convert_to_input($('msg' + post_id).innerHTML);
+
+   //store the post in a global variable to be used in the event that an edit fails
+   globals.temp_string = $('msg' + post_id).innerHTML;
+   globals.temp_number = post_id;   
+   
+   if ( globals.current_forum_tab == "a" ) {
+      $('msg' + post_id).innerHTML = '<textarea class="theinputbox" cols=50 rows=15  id="edit_box'+post_id+'"></textarea>'   
+   } else {
+      $('msg' + post_id).innerHTML = '<textarea class="theinputbox" cols=50 rows=5  id="edit_box'+post_id+'"></textarea>'
+   }
+      
+   $('edit_box'+post_id).value = temp_string;
+   $('edit_button'+post_id).innerHTML = '<a onclick="javascript:save_wiki_edit('+post_id+')">save</a>';
+}
+
+function save_wiki_edit(post_id){
+   var pars = 'post_id=' + post_id + '&content_of_post=' + encodeURIComponent($("edit_box"+post_id).value)
+   $('msg' + post_id).innerHTML = '<div style="width:100%;margin:0 auto;padding-top:10%;font-size:22px;font-weight:bold;color:#bbb;text-align:center;"><img border="0" src="img/indicator.gif"> </div>';
+   var myAjax = new Ajax.Request('edit_wiki.php', {method: 'post', parameters: pars, onComplete: edit_wiki_response});
+}
+
+function edit_wiki_response(originalRequest) {
+    var temp_string = originalRequest.responseText;
+
+    var temp_array = temp_string.split("^?");    
+	
+	if (error_code(temp_array)) {
+	   alert(temp_array[1]);
+	   $('msg' + globals.temp_number).innerHTML = globals.temp_string;
+	   $('edit_button' + globals.temp_number).innerHTML = '<a onclick="javascript:edit_wiki('+globals.temp_number+')">edit</a>'
+	   return;
+	}
 	
 	if (temp_array[3] == 1) {
        get_thread_page(globals.thread_watching,globals.current_page_of_thread,0,0);
 	} else {
-	   //current_wiki_revision should be raised
 	   temp_array[2] = temp_array[2].replace(/\\r/g, '');  //replace is for IE
 	   temp_array[2] = temp_array[2].replace(/(&lt;&lt;&lt;FILE:.*?&gt;&gt;&gt;)/g,'<span style="display:none;">$1</span>');
 	   $('msg' + globals.temp_number).innerHTML = temp_array[2]
-	   $('edit_button' + globals.temp_number).innerHTML = '<a onclick="javascript:edit_post('+globals.temp_number+')">edit</a>'
+	   $('edit_button' + globals.temp_number).innerHTML = '<a onclick="javascript:edit_wiki('+globals.temp_number+')">edit</a>'
 	   updater();
 	}
 	 
@@ -1790,15 +1841,12 @@ function invite_response(originalRequest) {
 }
 
 function watch_thread(thread_id,total_posts){
-   var url = 'watch_thread.php';
    var pars = 'thread_id=' + thread_id + '&total_posts=' + total_posts;
-
-   var myAjax = new Ajax.Request(url, {method: 'post',parameters: pars, onComplete: watch_thread_response });     
+   var myAjax = new Ajax.Request('watch_thread.php', {method: 'post',parameters: pars, onComplete: watch_thread_response });     
 }
 
 function watch_thread_response(originalRequest){
     var temp_string = originalRequest.responseText;
-
     var temp_array = temp_string.split("^?");    
 
 	if (error_code(temp_array)) {
@@ -1827,15 +1875,12 @@ function watch_thread_response(originalRequest){
 }
 
 function unwatch_thread(thread_id){
-   var url = 'unwatch_thread.php';
    var pars = 'thread_id=' + thread_id;
-
-   var myAjax = new Ajax.Request(url, {method: 'post',parameters: pars, onComplete: unwatch_thread_response });     
+   var myAjax = new Ajax.Request('unwatch_thread.php', {method: 'post',parameters: pars, onComplete: unwatch_thread_response });     
 }
 
 function unwatch_thread_response(originalRequest){
     var temp_string = originalRequest.responseText;
-
     var temp_array = temp_string.split("^?");    
 
 	if (error_code(temp_array)) {
@@ -1906,15 +1951,13 @@ function post_msg(thread_id) {
     }
     globals.post_mutex = 1;
     globals.thread_watching = thread_id
-	
-    var url = 'post.php';
+
     var input = $("theinputbox").value;
 	var postcaptcha = $("postcaptcha").value;
-		
     var pars = 'user_id=' + account_info.user_id + '&input=' + encodeURIComponent(input) + '&thread_id=' + thread_id + '&postcaptcha=' + postcaptcha;
 	
 	$('thepostbutton').disabled = true;
-    var myAjax = new Ajax.Request(url, {method: 'post',parameters: pars, onComplete: post_response });  
+    var myAjax = new Ajax.Request('post.php', {method: 'post',parameters: pars, onComplete: post_response });  
 }
 
 function post_response(originalRequest) {
@@ -1926,6 +1969,16 @@ function post_response(originalRequest) {
     $('result').value = temp_string;
     var temp_array = temp_string.split("^?");    
 		
+	if (temp_array[0] == "-2") {
+		alert(temp_array[1]);
+		$("theinputbox").value = "";
+		updater();
+		
+		if ((settings.new_user_post_captcha) && (account_info.status == 0)) {
+		   reset_captcha();
+		}  
+		return;
+    }	
 	if (error_code(temp_array)) {
 		if ((settings.new_user_post_captcha ) && (account_info.status == 0)) {
 		   reset_captcha();
@@ -1953,8 +2006,7 @@ function reset_captcha() {
 function auto_login()
 {
     globals.attempting_auto_login = true;
-    var url = 'auto_login.php';	
-    var myAjax = new Ajax.Request(url, {method: 'post', parameters: "", onComplete: autologinResponse});
+    var myAjax = new Ajax.Request('auto_login.php', {method: 'post', parameters: "", onComplete: autologinResponse});
 }
 
 function login()
@@ -1983,14 +2035,13 @@ function makenewuser()
     }
     globals.login_mutex = 1;  
 	
-    var url = 'makenewuser.php';
     var newuser = $("newuser").value;
     var newpassword0 = $("newpassword0").value;
     var newpassword1 = $("newpassword1").value;
     var captcha = $("captcha").value;	
     var pars = 'newuser=' + encodeURIComponent(newuser) + '&newpassword0=' + encodeURIComponent(newpassword0) + '&newpassword1=' + encodeURIComponent(newpassword1) + '&captcha=' + captcha;
 
-    var myAjax = new Ajax.Request(url, {method: 'post', parameters: pars, onComplete: makenewuserResponse});
+    var myAjax = new Ajax.Request('makenewuser.php', {method: 'post', parameters: pars, onComplete: makenewuserResponse});
 }
 
 function autologinResponse(originalRequest) {
@@ -2380,6 +2431,10 @@ function get_site_settings_response(originalRequest) {
 	+ "the second number is number of days the thread has been inactive.  Examples: Close thread 20 days after creation = 20,0 "    
 	+ "Close thread after 3 days of inactivity = 0,3  Close thread after 3 days of inactivity and at least 20 days after creation = 20,3 "
 	+ "To never auto-close threads, set this to 0,0")); 
+	helpline.set("auto_delete_pt",intext("This is the option to cause old or inactive private threads to be automatically deleted.  The first number is the number of days after the private thread was created, "
+    + "the second number is number of days the private thread has been inactive.  Examples: Delete a private thread 20 days after creation = 20,0 "   
+    + "Delete a private thread after 3 days of inactivity = 0,3  Delete a private thread after 3 days of inactivity and at least 20 days after creation = 20,3 "
+    + "To never auto-delete private threads, set this to 0,0")); 	
 	helpline.set("prune_watchlist",intext("If set, threads that have been closed or deleted will be removed from a user's watchlist after at least a week"));
 	helpline.set("prune_deleted_threads",intext("If set, threads that have been set to state 'deleted' will be removed from the database after at least 2 weeks, along with all of its posts and file attachments"));
 	helpline.set("prune_deleted_posts",intext("If set, posts that have been set to state 'deleted' will be removed from the database after at least 2 weeks"));
@@ -2393,9 +2448,10 @@ function get_site_settings_response(originalRequest) {
     + "with them on linkedin/facebook will be generated for them"));
     helpline.set("linkedin_request_connections",intext("If set, during LinkedIn authentication the user will be asked to give their connections information in addition to their basic information.  "
     + "This only needs to be set if you're using linkedin_references_needed or fb_li_welcome_pt"));
-	helpline.set("prune_session_table",intext("Session rows that have been inactive for over a month will be deleted"));	
+	helpline.set("prune_session_table",intext("Session rows that have been inactive for over six months will be deleted"));	
     helpline.set("prune_closed_threads",intext("Closed threads will be deleted from the database after the number of days specified.  To never auto-delete "
 	+ "closed threads set it to -1.  Note: the system does this check once a week, so deletions won't happen exactly at the time specified"));
+	helpline.set("prune_old_pt",intext("Deletes old PTs after this many months of inactivity, set to 0 to never prune old PTs"));
 	helpline.set("first_tab_enabled",intext("Enable the first tab") );
 	helpline.set("first_tab_name",intext("Name of first tab"));
 	helpline.set("first_tab_location",intext("File that the first tab will load"));
@@ -2455,6 +2511,7 @@ function get_site_settings_response(originalRequest) {
 	helpline.set("helpmenu6_indexable",intext("Content can be indexed by web search bots"));
 	helpline.set("articles_topic_name",intext("Topic title that appears directly above the articles"));
 	helpline.set("pt_topic_name",intext("Topic title that appears directly above the private threads"));
+	helpline.set("post_approval",intext("If set, new users (status = 0) will need to have their postings approved by a moderator"));
 	
 	var count = parseInt(temp_array[0]);
 	var html = "";		
@@ -2979,12 +3036,12 @@ function get_lockdown_button_response(originalRequest) {
 
 		if (settings.new_user_post_captcha == false && (settings.enable_forums || settings.enable_articles || settings.enable_private_threads)) {fragment += '<br><input type="checkbox" id="lockdown0" />'+intext('Captchas for new users when posting');} else {fragment += '<input style="display:none;" type="checkbox" id="lockdown0" />';}
 		if (settings.new_accounts_allowed) {fragment += '<br><input type="checkbox" id="lockdown1" />'+intext('Disable new account creation');} else {fragment += '<input style="display:none;" type="checkbox" id="lockdown1" />';}
-		if (settings.must_login_to_see_forum == false && (settings.enable_forums || settings.enable_articles)) {fragment += '<br><input type="checkbox" id="lockdown2" />'+intext('Must login to see forum and articles');} else {fragment += '<input style="display:none;" type="checkbox" id="lockdown2" />';}
-
+		if (settings.post_approval == false) {fragment += '<br><input type="checkbox" id="lockdown2">Posts from new accounts must be approved by a moderator';} else {fragment += '<input style="display:none;" type="checkbox" id="lockdown2" />';}
+		if (settings.must_login_to_see_forum == false && (settings.enable_forums || settings.enable_articles)) {fragment += '<br><input type="checkbox" id="lockdown3" />'+intext('Must login to see forum and articles');} else {fragment += '<input style="display:none;" type="checkbox" id="lockdown3" />';}
 		if (account_info.status == 5) {
-		   if (settings.enable_forums || settings.enable_articles) {fragment2 += '<br><input type="checkbox" id="lockdown3" />'+intext('Take forum and articles offline');} else {fragment2 += '<input style="display:none;" type="checkbox" id="lockdown3" />';}
-		   if (settings.enable_private_threads) {fragment2 += '<br><input type="checkbox" id="lockdown4" />'+intext('Take private threads offline');} else {fragment2 += '<input style="display:none;" type="checkbox" id="lockdown4" />';}
-		   fragment2 += '<br><input onclick="check_rest()" type="checkbox" id="lockdown5" />'+intext('Take site offline');	 
+		   if (settings.enable_forums || settings.enable_articles) {fragment2 += '<br><input type="checkbox" id="lockdown4" />'+intext('Take forum and articles offline');} else {fragment2 += '<input style="display:none;" type="checkbox" id="lockdown4" />';}
+		   if (settings.enable_private_threads) {fragment2 += '<br><input type="checkbox" id="lockdown5" />'+intext('Take private threads offline');} else {fragment2 += '<input style="display:none;" type="checkbox" id="lockdown5" />';}
+		   fragment2 += '<br><input onclick="check_rest()" type="checkbox" id="lockdown6" />'+intext('Take site offline');	 
 		   
 		   fragment3 = '<br><input type="radio" name="group1" id="indefinite"> '+intext('Indefinitely');		  
 		   fragment4 = intext('System message')+": "+'<input type="text" id="system_message" maxlength="255" style="width: 600px" class="theinputbox" value=""><br><br>';	  
@@ -3007,18 +3064,19 @@ function get_lockdown_button_response(originalRequest) {
 		var fragment = "<ul>";
 		var statusarray=["<li>"+intext("Captchas for new users when posting")+"</li>", 
 		"<li>"+intext("New account creation is disabled")+"</li>", 
+		"<li>"+intext("Posts from new accounts must be approved by a moderator")+"</li>",   
 		"<li>"+intext("Must login to see forum and articles")+"</li>",
 		"<li>"+intext("Forum and articles are offline")+"</li>",
 		"<li>"+intext("Private threads are offline")+"</li>", 
 		"<li>"+intext("Site is offline")+"</li>"]
 
-		for (i = 0; i < 6; i++) {
+		for (i = 0; i < 7; i++) {
 		   if (parseInt(temp_array[1] & Math.pow(2,i))) {
 		      fragment += statusarray[i];
 		   }
 		}		
 		fragment += "</ul>"+intext("Until")+": " + temp_array[2];
-		if (temp_array[3]) {
+		if (temp_array[4]) {
 			fragment += "<br>"+intext("Message")+": " + temp_array[3];
 		}
 		var html = "<br>"+intext("Lockdown button is ON")+'<br>'+fragment+'<br><br><input class="postbutton" type="button" onClick="javascript:set_lockdown(0)" value="'+intext('Turn off')+'">';
@@ -3044,7 +3102,7 @@ function set_lockdown(on_off) {
     if (on_off) {
 		var code = 0;
 		
-		if (account_info.status == 5) {var limit = 6;} else {var limit = 3;}
+		if (account_info.status == 5) {var limit = 7;} else {var limit = 4;}
 		for (var i = 0; i < limit; i++) {
 		   if ($('lockdown'+i).checked) {code += Math.pow(2,i);}
 		}
@@ -3132,16 +3190,13 @@ function get_user_list_response(originalRequest) {
    var count = parseInt(temp_array[3]);
    
    for (var i = 0; i < count; i++) {
-      offset = 4 + (i * 2);
-	  if (temp_array[offset+0] == -1) {
-		  user_list += '<tr> <td class="coluserlistone">' + temp_array[offset+0] + 
-		   '</td> <td class="coluserlisttwo">' + '<a href="profile.php?ip='+ temp_array[offset+1]  +'" id="profile_box'+i+'">' + temp_array[offset+1] + '</a></td></tr>';
-	  } else if (temp_array[offset+0] == -2) {
-		  user_list += '<tr> <td class="coluserlistone">' + temp_array[offset+0] + 
-		   '</td> <td class="coluserlisttwo">' + '<a href="profile.php?fb='+ temp_array[offset+1]  +'" id="profile_box'+i+'">' + temp_array[offset+1] + '</a></td></tr>';		   
+      offset = 4 + (i * 3);
+	  if (temp_array[offset+1] == -1) {
+		  user_list += '<tr> <td class="coluserlistone">' + temp_array[offset+1] + 
+		   '</td> <td class="coluserlisttwo">' + '<a href="profile.php?ban_id='+ temp_array[offset]  +'" id="profile_box'+i+'">' + temp_array[offset+2] + '</a></td></tr>';  
 	  } else {
-		  user_list += '<tr> <td class="coluserlistone">' + temp_array[offset+0] + 
-		   '</td> <td class="coluserlisttwo">' + '<a href="profile.php?user_id='+ temp_array[offset+0]  +'" id="profile_box'+i+'">' + temp_array[offset+1] + '</a></td></tr>';
+		  user_list += '<tr> <td class="coluserlistone">' + temp_array[offset+1] + 
+		   '</td> <td class="coluserlisttwo">' + '<a href="profile.php?user_id='+ temp_array[offset+1]  +'" id="profile_box'+i+'">' + temp_array[offset+2] + '</a></td></tr>';
 	  }
    }
    
@@ -3441,13 +3496,11 @@ function show_avatars(offset){
    $('avatar_list').innerHTML = display;
 }
 
-function select_avatar(avatar_number){   
-    var url = 'update_avatar.php';
-    var pars = "avatar_number=" + avatar_number;
-
+function select_avatar(avatar_number){       
     account_info.avatar_number = avatar_number;
 
-    var myAjax = new Ajax.Request(url, {method: 'post', parameters: pars, onComplete: update_avatar_response});
+    var pars = "avatar_number=" + avatar_number;
+    var myAjax = new Ajax.Request('update_avatar.php', {method: 'post', parameters: pars, onComplete: update_avatar_response});
 }
 
 function update_avatar_response(originalRequest) {
@@ -3459,7 +3512,7 @@ function update_avatar_response(originalRequest) {
        set_corner_avatar(account_info.user_id,account_info.avatar_number);
     }
 	
-	if (settings.avatars_same_size) { extra = 'width="'+settings.max_avatar_dimensions[0]+'" height="'+settings.max_avatar_dimensions[1]+'"';} else { extra = '';}
+	if (settings.avatars_same_size) {extra = 'width="'+settings.max_avatar_dimensions[0]+'" height="'+settings.max_avatar_dimensions[1]+'"';} else { extra = '';}
 	
 	$('current_avatar').innerHTML = '<img '+extra+' src="file.php?uid=' +account_info.user_id+ '&avatar_number=' +account_info.avatar_number+ '">';
 	
@@ -3467,12 +3520,11 @@ function update_avatar_response(originalRequest) {
 }
 
 function change_password() {
-    var url = 'changepassword.php';
     var pars = "oldpass=" + encodeURIComponent($('oldpass').value);
     pars += "&newpass0=" + encodeURIComponent($('newpass0').value);
     pars += "&newpass1=" + encodeURIComponent($('newpass1').value);
 		
-    var myAjax = new Ajax.Request(url, {method: 'post', parameters: pars, onComplete: changepassword_response});
+    var myAjax = new Ajax.Request('changepassword.php', {method: 'post', parameters: pars, onComplete: changepassword_response});
 }
 
 function changepassword_response(originalRequest) {
@@ -3488,10 +3540,8 @@ function changepassword_response(originalRequest) {
 }
 
 function change_name() {
-    var url = 'changename.php';
     var pars = "newusername=" + encodeURIComponent($('newname').value);
-
-    var myAjax = new Ajax.Request(url, {method: 'post', parameters: pars, onComplete: changename_response});
+    var myAjax = new Ajax.Request('changename.php', {method: 'post', parameters: pars, onComplete: changename_response});
 }
 
 function changename_response(originalRequest) {
@@ -3531,8 +3581,7 @@ function set_theme(file_name)
 
 function logout()
 {   
-	var url = 'logout.php';
-    var myAjax = new Ajax.Request(url, {method: 'get', parameters: "", onComplete: kick_screen});
+    var myAjax = new Ajax.Request('logout.php', {method: 'get', parameters: "", onComplete: kick_screen});
 }
 
 function kick_screen(originalRequest)
@@ -3555,7 +3604,6 @@ function updater()
     }
     globals.updater_mutex = 1;
 
-    var url = 'update.php';
     var pars = '&hitf=' + globals.highest_thread_in_forums + '&thread_watching=' + globals.thread_watching + '&last_update=' + globals.highest_post_id + "&hipt=" +globals.highest_post_in_thread ;
     if (globals.newly_read_threads != "") {
        pars += "&nrt=" + globals.newly_read_threads;
@@ -3563,7 +3611,7 @@ function updater()
 	if ((globals.current_forum == 13)  && (globals.current_page_of_thread == 0)) {
        pars += "&current_forum=" + globals.current_forum + "&last_wiki_revision=" + globals.last_wiki_revision;
     }
-    var myAjax = new Ajax.Request(url, {method: 'get', parameters: pars, onComplete: updaterResponse});
+    var myAjax = new Ajax.Request('update.php', {method: 'get', parameters: pars, onComplete: updaterResponse});
 }
 
 function updaterResponse(originalRequest)	{
@@ -3598,11 +3646,64 @@ function updaterResponse(originalRequest)	{
 
     append_to_thread(updates[3]);
     process_signals(updates[4]);
+	process_events(updates[5]);
 }
 
-function process_signals(in_string) {
-   if (in_string == 0) {return; }
-   get_thread_page(globals.thread_watching,globals.current_page_of_thread,0,0);
+function update_forum(in_string){
+   var temp_array = in_string.split("^?");
+
+   if (temp_array[0] > 0) {
+      globals.highest_thread_in_forums = temp_array[0];
+   }
+   
+   if (parseInt(temp_array[1]) == 0) {
+      return;
+   }
+ 
+   for (x = 0; x < parseInt(temp_array[1]); x++) {   
+	    var done = false;
+	    var total_threads = 0;
+	    var total_stickies = 0;
+	   
+	    var forum_id = parseInt(temp_array[2 + x * 4]);
+	    var thread_id = parseInt(temp_array[3 + x * 4]);
+	    var title = temp_array[4 + x * 4];
+		var state = parseInt(temp_array[5 + x * 4]);
+
+	    if (thread_id > globals.highest_thread_in_forums) { globals.highest_thread_in_forums = thread_id; }
+   
+        while (done == false) {
+		   if ((cache.thread_state[forum_id-1][total_threads] == 3) || (cache.thread_state[forum_id-1][total_threads] == 4)) {
+		      total_stickies++;
+		   }
+		   if ((cache.thread_title[forum_id-1][total_threads] == "&nbsp") || (cache.thread_title[forum_id-1][total_threads] == undefined)) {
+			  done = true;
+		   }  else {
+			  total_threads++;
+		   }
+		}
+		
+		for (i = total_threads; i > 0 + total_stickies; i--) {      
+		   cache.thread_title[forum_id-1][i+1] = cache.thread_title[forum_id-1][i];
+   	       cache.thread_id[forum_id-1][i+1] = cache.thread_id[forum_id-1][i];
+		   cache.thread_state[forum_id-1][i+1] = cache.thread_state[forum_id-1][i];
+		   
+		   cache.thread_title[forum_id-1][i] = cache.thread_title[forum_id-1][i-1];		
+		   cache.thread_id[forum_id-1][i] = cache.thread_id[forum_id-1][i-1];		
+		   cache.thread_state[forum_id-1][i] = cache.thread_state[forum_id-1][i-1];		
+		}
+
+		cache.thread_id[forum_id-1][total_threads+1] = 0;	 
+		cache.thread_title[forum_id-1][total_threads+1] = "&nbsp";		
+
+		cache.thread_title[forum_id-1][0 + total_stickies] = title;
+		cache.thread_id[forum_id-1][0 + total_stickies] = thread_id;
+		cache.thread_state[forum_id-1][0 + total_stickies] = state;
+    }
+	
+	show_forum();
+
+	return; 
 }
 
 function update_message_center(in_string) {
@@ -3725,7 +3826,7 @@ function append_to_thread(in_string){
 		}
 
 		if (temp_array[offset+5] == 1) {
-		   edit_button = '<span id=edit_button'+temp_array[offset+6]+' class="plink" style="margin-left:0px;position:relative;top:-4px;padding-top:6px;"><a onclick="javascript:edit_post('+temp_array[offset+6]+')">'+intext("edit")+'</a></span><br>';
+		   edit_button = '<span id=edit_button'+temp_array[offset+6]+' class="plink" style="margin-left:0px;position:relative;top:-2px;padding-top:6px;"><a onclick="javascript:edit_post('+temp_array[offset+6]+')">'+intext("edit")+'</a></span><br>';
 		} else {
 		   edit_button = '';
 		}
@@ -3779,61 +3880,203 @@ function append_to_thread(in_string){
 	$("upload_info").innerHTML = "";
 } 
 
-function update_forum(in_string){
-   var temp_array = in_string.split("^?");
+function process_signals(in_string) {
 
-   if (temp_array[0] > 0) {
-      globals.highest_thread_in_forums = temp_array[0];
-   }
+   signal = parseInt(in_string);
    
-   if (parseInt(temp_array[1]) == 0) {
-      return;
+   if (signal == 0) {return;}
+
+   if (signal & 4) {
+      get_thread_page(globals.thread_watching,globals.current_page_of_thread,0,0);
    }
- 
-   for (x = 0; x < parseInt(temp_array[1]); x++) {   
-	    var done = false;
-	    var total_threads = 0;
-	    var total_stickies = 0;
+}
+
+function process_events(in_string) {
+	if (in_string == undefined) {return;}
 	   
-	    var forum_id = parseInt(temp_array[2 + x * 4]);
-	    var thread_id = parseInt(temp_array[3 + x * 4]);
-	    var title = temp_array[4 + x * 4];
-		var state = parseInt(temp_array[5 + x * 4]);
-
-	    if (thread_id > globals.highest_thread_in_forums) { globals.highest_thread_in_forums = thread_id; }
-   
-        while (done == false) {
-		   if ((cache.thread_state[forum_id-1][total_threads] == 3) || (cache.thread_state[forum_id-1][total_threads] == 4)) {
-		      total_stickies++;
-		   }
-		   if ((cache.thread_title[forum_id-1][total_threads] == "&nbsp") || (cache.thread_title[forum_id-1][total_threads] == undefined)) {
-			  done = true;
-		   }  else {
-			  total_threads++;
-		   }
-		}
+    var temp_array = in_string.split("^?");
+    var total_events = parseInt(temp_array[0]);
+	var display_string = "";
+	
+	if (globals.narrow_width) {extra = "&nbsp;&nbsp;&nbsp;"} else {extra = "<br>";}
+	
+	for (var i = 0; i < total_events; i++) {
+	    offset = 1 + i;
 		
-		for (i = total_threads; i > 0 + total_stickies; i--) {      
-		   cache.thread_title[forum_id-1][i+1] = cache.thread_title[forum_id-1][i];
-   	       cache.thread_id[forum_id-1][i+1] = cache.thread_id[forum_id-1][i];
-		   cache.thread_state[forum_id-1][i+1] = cache.thread_state[forum_id-1][i];
-		   
-		   cache.thread_title[forum_id-1][i] = cache.thread_title[forum_id-1][i-1];		
-		   cache.thread_id[forum_id-1][i] = cache.thread_id[forum_id-1][i-1];		
-		   cache.thread_state[forum_id-1][i] = cache.thread_state[forum_id-1][i-1];		
-		}
-
-		cache.thread_id[forum_id-1][total_threads+1] = 0;	 
-		cache.thread_title[forum_id-1][total_threads+1] = "&nbsp";		
-
-		cache.thread_title[forum_id-1][0 + total_stickies] = title;
-		cache.thread_id[forum_id-1][0 + total_stickies] = thread_id;
-		cache.thread_state[forum_id-1][0 + total_stickies] = state;
+		display_string += "<a onclick=\"javascript:show_event("+ temp_array[offset]+ ")\">&#9679 " + "post approval #"+temp_array[offset] + "</a>"+extra;  
     }
 	
-	show_forum();
+	if (display_string != "") {
+		other_content = $('message_center').innerHTML;
 
-	return; 
+		if (globals.narrow_width) {
+			$('message_center').innerHTML = other_content + "<br><br>" + intext("MOD")+": " + display_string;
+		} else {	
+			$('message_center').innerHTML = other_content + "<br><br>" + intext("MOD")+": <br>" + display_string;
+		}
+	}
+}
+
+function show_event(event_id) {
+	set_display("top_area:none","midrow:none","content_area:inline","inputdiv:none","topbar:none","bottombar:none");
+	set_class();
+	hide_footer();
+	
+	$('content_area').innerHTML = '<div style="width:100%;max-width:1250px;padding-top:10%;font-size:22px;font-weight:bold;color:#bbb;text-align:center;"><img border="0" src="img/indicator.gif"> </div>';
+	var pars = 'event_id='+event_id;
+	var myAjax = new Ajax.Request("show_event.php", {method: 'post', parameters: pars, onComplete: show_event_response}); 
+}
+
+function show_event_response(originalRequest) {
+	var temp_string = originalRequest.responseText;
+	var temp_array = temp_string.split("^?");
+
+	if (error_code(temp_array)) {
+	   $('content_area').setAttribute("style","display:block;max-width:1000px;");
+	   $('content_area').innerHTML = temp_array[1];
+	}  
+	
+	var event_id = parseInt(temp_array[1]);
+	var type = temp_array[2];
+	var user_id = parseInt(temp_array[3]);
+	var username = temp_array[4];
+	var thread_id = parseInt(temp_array[5]);
+	var thread_title = temp_array[6];
+	var content = temp_array[7];
+	var date = temp_array[8];
+    var newcontent = temp_array[9];
+	var forum_id = temp_array[10];
+	var forum_title = temp_array[11];
+		 
+	var locationfield = '<a onclick="javascript:get_thread_page('+thread_id+',0,0,0)">'+thread_title+'</a>';
+    var userfield = '<a href="profile.php?user_id='+ user_id +'" id="profile_box">' + username + '</a>'; 
+   
+    if (type == "post") {
+		var file_attachments = '';
+		var tmp_result = content.match(/&lt;&lt;&lt;FILE:(.*?)&gt;&gt;&gt;/g);
+		if (tmp_result) {
+			for (var x = 0; x < tmp_result.length; x++) {
+				tmp_filename = tmp_result[x].replace(/&lt;&lt;&lt;FILE:(.*?)\|.*?&gt;&gt;&gt;/,'$1');      
+				tmp_fileid = tmp_result[x].replace(/&lt;&lt;&lt;FILE:.*?\|(.*?)&gt;&gt;&gt;/,'$1');  				
+				file_attachments += '<a href="file.php?id=' +tmp_fileid+ '">' + tmp_filename + '</a><br>';
+			}
+			file_attachments = '<br>'+intext+('File attachments')+':<br>'+file_attachments+'</td><td class="colfour"></td></tr>';
+			content = content.replace(/(&lt;&lt;&lt;FILE:.*?&gt;&gt;&gt;)/g,'<span style="display:none;">$1</span>');
+		}      
+   
+	   display_string = intext("The following post needs moderator approval")+":<br>event_id: " + event_id + "<br>"+intext("Date")+": " + date + "<br>"+intext("Poster")+":" 
+		   + " " + userfield + "<br>"+intext("Thread")+": " + locationfield + "<br>"+intext("Content")+":" + content + file_attachments + "<br><br>"
+		   + '<input class="rtbutton" type="button" onClick="javascript:approve_event('+event_id+')" value="'+intext('Approve')+'">'
+		   + ' <input class="rtbutton" type="button" onClick="javascript:disapprove_event('+event_id+')" value="'+intext('Disapprove')+'">'
+   } else if (type == "editpost" || type == "editwiki") {
+  		var file_attachments = '';
+		var tmp_result = content.match(/&lt;&lt;&lt;FILE:(.*?)&gt;&gt;&gt;/g);
+		if (tmp_result) {
+			for (var x = 0; x < tmp_result.length; x++) {
+				tmp_filename = tmp_result[x].replace(/&lt;&lt;&lt;FILE:(.*?)\|.*?&gt;&gt;&gt;/,'$1');      
+				tmp_fileid = tmp_result[x].replace(/&lt;&lt;&lt;FILE:.*?\|(.*?)&gt;&gt;&gt;/,'$1');  				
+				file_attachments += '<a href="file.php?id=' +tmp_fileid+ '">' + tmp_filename + '</a><br>';
+			}
+			file_attachments = '<br>'+intext('File attachments')+':<br>'+file_attachments+'</td><td class="colfour"></td></tr>';
+			content = content.replace(/(&lt;&lt;&lt;FILE:.*?&gt;&gt;&gt;)/g,'<span style="display:none;">$1</span>');
+		}      
+
+		var newfile_attachments = '';
+		if (newcontent) {
+		   var tmp_result = newcontent.match(/&lt;&lt;&lt;FILE:(.*?)&gt;&gt;&gt;/g);
+		}
+
+		if (tmp_result) {
+			for (var x = 0; x < tmp_result.length; x++) {
+				tmp_filename = tmp_result[x].replace(/&lt;&lt;&lt;FILE:(.*?)\|.*?&gt;&gt;&gt;/,'$1');      
+				tmp_fileid = tmp_result[x].replace(/&lt;&lt;&lt;FILE:.*?\|(.*?)&gt;&gt;&gt;/,'$1');  				
+				newfile_attachments += '<a href="file.php?id=' +tmp_fileid+ '">' + tmp_filename + '</a><br>';
+			}
+
+			newfile_attachments = '<br>'+intext('File attachments')+':<br>'+newfile_attachments+'</td><td class="colfour"></td></tr>';
+			newcontent = newcontent.replace(/(&lt;&lt;&lt;FILE:.*?&gt;&gt;&gt;)/g,'<span style="display:none;">$1</span>');
+		}   	
+
+		display_string = intext("The following edit needs moderator approval")+":<br>event_id: " + event_id + "<br>"+intext("Date")+": " + date + "<br>"+intext("Poster")+":" 
+		   + " " + userfield + "<br>"+intext("Thread")+": " + locationfield + "<br><b>"+intext("Old revision")+":</b>" + content + file_attachments + "<br><br>" 
+		   + "<b>"+intext("New revision")+":</b> " + newcontent + newfile_attachments + "<br>" 
+		   + '<input class="rtbutton" type="button" onClick="javascript:approve_event('+event_id+')" value="'+intext('Approve')+'">'
+		   + ' <input class="rtbutton" type="button" onClick="javascript:disapprove_event('+event_id+')" value="'+intext('Disapprove')+'">'
+   } else if (type == "thread") {
+		var file_attachments = '';
+		var tmp_result = content.match(/&lt;&lt;&lt;FILE:(.*?)&gt;&gt;&gt;/g);
+		if (tmp_result) {
+			for (var x = 0; x < tmp_result.length; x++) {
+				tmp_filename = tmp_result[x].replace(/&lt;&lt;&lt;FILE:(.*?)\|.*?&gt;&gt;&gt;/,'$1');      
+				tmp_fileid = tmp_result[x].replace(/&lt;&lt;&lt;FILE:.*?\|(.*?)&gt;&gt;&gt;/,'$1');  				
+				file_attachments += '<a href="file.php?id=' +tmp_fileid+ '">' + tmp_filename + '</a><br>';
+			}
+			file_attachments = '<br>'+intext('File attachments')+':<br>'+file_attachments+'</td><td class="colfour"></td></tr>';
+			content = content.replace(/(&lt;&lt;&lt;FILE:.*?&gt;&gt;&gt;)/g,'<span style="display:none;">$1</span>');
+		}      
+   
+	   display_string = intext("The following thread needs moderator approval")+":<br>event_id: " + event_id + "<br>"+intext("Date")+": " + date + "<br>"+intext("Poster")+":" 
+		   + " " + userfield + "<br>"+intext("Forum")+": " + forum_title + "<br>"+intext("Thread title")+" :" +thread_title+ "<br>"+intext("Content")+":<br>" + content + file_attachments + "<br><br>"
+		   + '<input class="rtbutton" type="button" onClick="javascript:approve_event('+event_id+')" value="'+intext('Approve')+'">'
+		   + ' <input class="rtbutton" type="button" onClick="javascript:disapprove_event('+event_id+')" value="'+intext('Disapprove')+'">'
+	}	   
+
+   $('content_area').setAttribute("style","display:block;max-width:1000px;");
+   $('content_area').innerHTML = display_string
+   
+   	jQuery().ready(function() {
+		jQuery("#profile_box").fancybox({
+			'width'				: 800,
+			'height'			: 400,
+			'autoScale'			: false,
+			'transitionIn'		: 'none',
+			'transitionOut'		: 'none',
+			'type'				: 'iframe'
+		});		
+	});	     
+}   
+
+function approve_event(event_id) {
+	$('content_area').innerHTML = '<div style="width:100%;max-width:1250px;padding-top:10%;font-size:22px;font-weight:bold;color:#bbb;text-align:center;"><img border="0" src="img/indicator.gif"> </div>';
+	var pars = 'event_id='+event_id;
+	var myAjax = new Ajax.Request("approve_event.php", {method: 'post', parameters: pars, onComplete: approve_event_response}); 
+}
+
+function approve_event_response(originalRequest) {
+	var temp_string = originalRequest.responseText;
+	var temp_array = temp_string.split("^?");
+
+	alert(temp_array[1]);
+	updater();
+	if (settings.enable_forums) {
+	   get_tab("forum"+ (6 - Math.ceil((settings.total_forums / settings.forums_per_tab)))); 
+	} else if (settings.enable_articles) {
+	   get_tab("articles");
+	} else if (settings.enable_private_threads) {
+	   get_tab("pt");
+	}
+}
+
+function disapprove_event(event_id) {
+	$('content_area').innerHTML = '<div style="width:100%;max-width:1250px;padding-top:10%;font-size:22px;font-weight:bold;color:#bbb;text-align:center;"><img border="0" src="img/indicator.gif"> </div>';
+	var pars = 'event_id='+event_id;
+	var myAjax = new Ajax.Request("disapprove_event.php", {method: 'post', parameters: pars, onComplete: disapprove_event_response}); 
+}
+
+function disapprove_event_response(originalRequest) {
+	var temp_string = originalRequest.responseText;
+	var temp_array = temp_string.split("^?");
+
+	alert(temp_array[1]);
+	updater();
+	if (settings.enable_forums) {
+	   get_tab("forum"+ (6 - Math.ceil((settings.total_forums / settings.forums_per_tab)))); 
+	} else if (settings.enable_articles) {
+	   get_tab("articles");
+	} else if (settings.enable_private_threads) {
+	   get_tab("pt");
+	}
+	
 }
 
 function enlarge_image(filename,image_id,rand_number) {
@@ -4004,23 +4247,13 @@ function profile_page_response(originalRequest)	{
     $('inner_profile_content').innerHTML = '<div class="profiletext">' + profile_text + '</div>' + send_message_button;
 }
 
-function load_ipaddr_page(ip_address) {
+function load_ban_page(ip_address) {
 	if (window.parent.account_info.status > 4) {
 		$('profile_title').innerHTML = 	"<table border=0><tr>" + 
-		"<td class='colmod'>&nbsp;<span class='profile_title'>"+intext("IP Address")+": "+ip_address+'</span><br><br><a onclick="javascript:window.parent.ipunban(\''+ip_address+'\')">'+intext('Unban IP address')+'</a>'+"</td></tr></table>";
+		"<td class='colmod'>&nbsp;<span class='profile_title'>"+intext("Ban ID")+": "+ip_address+'</span><br><br><a onclick="javascript:window.parent.unbanwiped(\''+ip_address+'\')">'+intext('Unban this entry')+'</a>'+"</td></tr></table>";
 	} else {
 		$('profile_title').innerHTML = 	"<table border=0><tr>" + 
-		"<td class='colmod'>&nbsp;<span class='profile_title'>"+intext("IP Address")+": "+ip_address+"</span>";
-	}
-}
-
-function load_fb_page(fb) {
-	if (window.parent.account_info.status > 4) {
-		$('profile_title').innerHTML = 	"<table border=0><tr>" + 
-		"<td class='colmod'>&nbsp;<span class='profile_title'>"+intext("Facebook ID")+": "+fb+'</span><br><br><a onclick="javascript:window.parent.fbunban(\''+fb+'\')">'+intext('Unban Facebook Account')+'</a>'+"</td></tr></table>";
-	} else {
-		$('profile_title').innerHTML = 	"<table border=0><tr>" + 
-		"<td class='colmod'>&nbsp;<span class='profile_title'>"+intext("Facebook ID")+": "+fb+"</span>";
+		"<td class='colmod'>&nbsp;<span class='profile_title'>"+intext("Ban ID")+": "+ip_address+"</span>";
 	}
 }
 
@@ -4110,7 +4343,6 @@ function show_forum_list(current_forum_id){
 function show_forum_list_response(originalRequest) {
    var temp_string = originalRequest.responseText;
    var temp_array = temp_string.split("^?");
-
    var count = parseInt(temp_array[1]);
    var part1 = "";
    
@@ -4450,15 +4682,16 @@ function wipe(user_id,wipe_type,dupe_check) {
    var myAjax = new Ajax.Request("mod.php", {method: 'get', parameters: pars, onComplete: mod_response});	
 }
 
-function ipunban(ip_address) {
-   var pars = "action=ipunban&ip=" + encodeURIComponent(ip_address);
+function unbanwiped(data) {
+   var pars = "action=unbanwiped&data=" + encodeURIComponent(data);
    var myAjax = new Ajax.Request("mod.php", {method: 'get', parameters: pars, onComplete: mod_response});	
 }
 
-function fbunban(fb) {
-   var pars = "action=fbunban&fb=" + encodeURIComponent(fb);
+/*
+function unbanwiped(fb) {
+   var pars = "action=unbanwiped&fb=" + encodeURIComponent(fb);
    var myAjax = new Ajax.Request("mod.php", {method: 'get', parameters: pars, onComplete: mod_response});	
-}
+}*/
 
 function deletefile(file_id) {
    var pars = "action=deletefile&file_id=" + file_id;

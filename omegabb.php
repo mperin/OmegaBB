@@ -26,18 +26,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 include_once('config.php');
 include_once('common.php');
 
-function SetForumReloadSignal() {
-		$cur = perform_query("select user_id from session where last_activity > DATE_SUB(now(),INTERVAL 6 MINUTE) and session != '0' order by user_id ASC LIMIT $results_per_page OFFSET $sql_offset",MULTISELECT);    	   
-		   
-		while ($row = mysql_fetch_array( $cur )) {
-	    $temp_id = $row["user_id"];   
-		}
-}
-
-
-
-
-
 function ApproveEvent($event_id) {
 	$row = perform_query("select * from queue where event_id=$event_id",SELECT);
 	$row2 = perform_query("select * from thread where thread_id=".$row->thread_id,SELECT);
@@ -56,6 +44,11 @@ function ApproveEvent($event_id) {
 		EditWiki($row->post_id, $row->data, $row->sender, 1);
 	} else if ($row->type == 'thread') {
         perform_query("update thread set needs_approval=0 where thread_id =".$row->thread_id,UPDATE);
+		$row4 = perform_query("select * from thread order by thread_id DESC LIMIT 1",SELECT);
+        if ($row->thread_id < $row4->thread_id) {
+		   perform_query("update thread set thread_id=". ($row4->thread_id + 1) . " where thread_id =".$row->thread_id,UPDATE);
+		   perform_query("update post set thread_id=". ($row4->thread_id + 1) . " where thread_id =".$row->thread_id,UPDATE);
+		}
 	}
 	perform_query("delete from queue where event_id='$event_id'",DELETE);
 			
@@ -66,7 +59,7 @@ function DisapproveEvent($event_id) {
 	$row = perform_query("select * from queue where event_id=$event_id",SELECT);
 	$row2 = perform_query("select username from user where user_id=".$row->sender,SELECT);
 	
-	LogEvent(1,intext("Rejected posting made by ") . " %%u" . $row->sender . ":" . $row2->username . ";");
+	LogEvent(1,intext("Rejected posting made by") . " %%u" . $row->sender . ":" . $row2->username . ";");
 	
 	perform_query("delete from queue where event_id='$event_id'",DELETE);
 	
@@ -97,7 +90,7 @@ function DisapproveEvent($event_id) {
 		perform_query("update file set is_deleted=2 where post_id=". $row->post_id,UPDATE);    
 	}
 
-    return "1^?".intext("Post disapproved");
+    return "1^?post rejected";
 }
 
 function ShowEvent($event_id) { 
@@ -112,7 +105,7 @@ function ShowEvent($event_id) {
 	} else if ($row->type  == 'editpost' || $row->type  == 'editwiki') {	
 	    $return_string = "1^?" . $event_id . "^?" . $row->type . "^?" . $row->sender  . "^?" . $row3->username . "^?" . $row->thread_id . "^?" . $row4->title . "^?" . $row2->message . "^?" . $row2->tstamp . "^?" . $row->data . "^?";
 	} else if ($row->type == 'thread') {		
-	    $return_string = "1^?" . $event_id . "^?" . $row->type . "^?" . $row->sender  . "^?" . $row3->username . "^?" . $row->thread_id . "^?" . $row4->title . "^?" . $row2->message . "^?" . $row2->tstamp . "^?^?" . $row->forum_id . "^?" . $settings->forum_topic_names[$row->forum_id];
+	    $return_string = "1^?" . $event_id . "^?" . $row->type . "^?" . $row->sender  . "^?" . $row3->username . "^?" . $row->thread_id . "^?" . $row4->title . "^?" . $row2->message . "^?" . $row2->tstamp . "^?^?" . $row->forum_id . "^?" . $settings->forum_topic_names[$row->forum_id - 1];
 	}
 
 	return $return_string;
@@ -175,7 +168,7 @@ function UnsetLockdownButton() {
 
 function SetLockdownButton($user_id,$code,$expire_time,$msg) {
    if ($code == 0) {return "-1^?".intext("Nothing was checked");}
-   if ($code > 7) {$reload_signal = 1;} else {$reload_signal = 0;} 
+   if ($code > 15) {$reload_signal = 1;} else {$reload_signal = 0;} 
 
    if (is_numeric($expire_time) &&  $expire_time > 0 && $expire_time < 26) {
       $expire_date = "DATE_ADD(now(),INTERVAL $expire_time HOUR)";
@@ -197,6 +190,9 @@ function SetLockdownButton($user_id,$code,$expire_time,$msg) {
    if ($code & NONEWACCOUNTS) {
       $state .= intext("New account creation is disabled"). "/";
    }   
+   if ($code & POSTAPPROVAL) {
+      $state .= "Posts from new accounts must be approved by a moderator". "/";
+   }      
    if ($code & MUSTLOGIN) {
       $state .= intext("Must sign in to see forum and articles"). "/";
    }   
@@ -406,7 +402,8 @@ function SaveSiteSettings() {
 	"helpmenu6_name" => "string",
 	"helpmenu6_location" => "string",
 	"helpmenu6_is_div" => "bool",
-	"helpmenu6_indexable" => "bool"
+	"helpmenu6_indexable" => "bool",
+	"post_approval" => "bool"
 	);		
 
 	if (count($_POST) == 0) {return "-1^?".intext("No settings changed");}
@@ -720,8 +717,8 @@ function LinkedInNewUser ($user_data,$user_connections) {
 	if ($settings->linkedin_references_needed) {
 		$references = 0;
         foreach ($obb_friends_list as $id) {
-		    $row3 = perform_query("select username, status, is_banned from user where user_id=$id",SELECT);
-			if (($row3->status >= $settings->minimum_status_of_linkedin_reference) && ($row3->is_banned == 0)) {
+		    $row3 = perform_query("select username, status from user where user_id=$id",SELECT);
+			if ($row3->status >= $settings->minimum_status_of_linkedin_reference) {
 				$references++;
 				$ref_names .= " %%u".$id.":".$row3->username.";";
 			}   
@@ -961,8 +958,8 @@ function FacebookNewUser ($fb_id,$fb_name,$fb_link,$access_token) {
 	if ($settings->fb_references_needed) {
 		$references = 0;
         foreach ($obb_friends_list as $id) {
-		    $row3 = perform_query("select username, status, is_banned from user where user_id=$id",SELECT);
-			if (($row3->status >= $settings->minimum_status_of_fb_reference) && ($row3->is_banned == 0)) {
+		    $row3 = perform_query("select username, status from user where user_id=$id",SELECT);
+			if ($row3->status >= $settings->minimum_status_of_fb_reference) {
 				$references++;
 				$ref_names .= " %%u".$id.":".$row3->username.";";
 			}   
@@ -1061,33 +1058,22 @@ function housecleaning() {
 	}
 
 	//See if any timed bannings need to be lifted
-	$cur2 = perform_query("select * from user where ban_expire_time < now()",MULTISELECT);    	   
+	$cur2 = perform_query("select * from ban where expires < now()",MULTISELECT);    	   
 	while ($row = mysql_fetch_array( $cur2 )) {
-		if ($row[user_id] == 0) {
-			//lockdown button's time has expired
-			perform_query("update user "
-				. "\n set "
-				. "\n settings=NULL,"			
-				. "\n theme=NULL,"
-				. "\n ban_expire_time=NULL"			
-				. " where user_id=0",UPDATE); 		
-			LogEvent(2,intext("Lockdown button expired"));	
-		} else {
-			$row2 = perform_query("select thread_block_list from user where user_id='0'",SELECT); 
-			$old_list = $row2->thread_block_list;
-			$new_list = preg_replace('/,' . $row[user_id] . '(,|$)/', '$1', $old_list);  
-			perform_query("update user "
-				. "\n set "
-				. "\n thread_block_list='" . $new_list . "'"
-				. " where user_id='0'",UPDATE); 	
-
-			perform_query("update user "
-				. "\n set "
-				. "\n is_banned=0,"
-				. "\n ban_expire_time=NULL"			
-				. " where user_id='".$row[user_id]."'",UPDATE); 	
-		}			
+			perform_query("delete from ban where user_id='" . $row["user_id"] . "'",DELETE); 		
 	}	
+	
+	//the lockdown button state is stored in System (user id 0)'s row information
+	$row = perform_query("select * from user where user_id = 0 and ban_expire_time < now()",SELECT);    
+	if ($row) {
+		perform_query("update user "
+			. "\n set "
+			. "\n settings=NULL,"			
+			. "\n theme=NULL,"
+			. "\n ban_expire_time=NULL"			
+			. " where user_id=0",UPDATE); 		
+		LogEvent(2,intext("Lockdown button expired"));	
+	}		
 
 	//See if any threads need to be auto-closed
 	if (($settings->auto_close_thread[0] != 0) && ($settings->auto_close_thread[1] != 0)) {
@@ -1463,7 +1449,7 @@ function EditWiki($post_id, $theinput, $user_id, $force=0) {
 	image_links_check($theinput);		
 	make_spaces_check($theinput);	
 
-	if ($status == 0 && $settings->post_approval && $force == 0) {
+	if ((($status == 0) && $settings->post_approval && ($force == 0)) || (($status == 0) && lockdown_button_check(POSTAPPROVAL) && ($force == 0))) {
 	   add_to_approval_queue('editwiki',$user_id,$row->thread_id,$post_id,$theinput,$row2->forum_id);
        return "-2^?".intext("Your post has been received and is pending approval");
     }
@@ -1507,6 +1493,9 @@ function EditWiki($post_id, $theinput, $user_id, $force=0) {
 	return "1^?Post edited^?$theinput^?1^?$num_posts";
 }
 
+//in the thread table, type means 0: public thread, 1, 2 or 3: private thread
+//in the post table, type means 0: normal post, 1, 2, 3 or 4: wiki post
+
 function EditMsg($post_id, $theinput, $user_id) {
     define('EDIT_GRACE_TIME',3);
     global $settings;
@@ -1536,9 +1525,6 @@ function EditMsg($post_id, $theinput, $user_id) {
 	if (is_flood()) { 
 	   return "-1^?".intext("Flood attack detected, please wait a while before posting");
 	}
-	if (($row->state == 1) && ($row2->forum_id != 13) ){
-	   return "-1^?".intext("You are not allowed to edit this post");
-	}	
 	if ($row->author_id != $user_id) {
 	   return "-1^?".intext("You're not the author of this post");
 	}
@@ -1562,7 +1548,7 @@ function EditMsg($post_id, $theinput, $user_id) {
 	image_links_check($theinput);		
 	make_spaces_check($theinput);	
 
-	if ($status == 0 && $settings->post_approval) {
+	if (($status == 0 && ($row2->forum_id != 12) && $settings->post_approval) || ($status == 0 && ($row2->forum_id != 12) && lockdown_button_check(POSTAPPROVAL))) {
 	   add_to_approval_queue('editpost',$user_id,$row->thread_id,$post_id,$theinput,$row2->forum_id);
        return "-2^?".intext("Your post has been received and is pending approval");
     }
@@ -1577,7 +1563,6 @@ function EditMsg($post_id, $theinput, $user_id) {
 	$theinput = stripslashes($theinput);
 
 	return "1^?Post edited^?$theinput";
-
 }
 
 function ForumIndex($page) {
@@ -2081,11 +2066,11 @@ function UserIdModOptions($user_id,$thread_id,$page,$post_position) {
    $is_deleted = $row->state;
    $avatar_id = $row->avatar_id;
    
-   $row = perform_query("select is_banned, status from user where user_id='" . $user_id . "'", SELECT);
+   $row = perform_query("select status from user where user_id='" . $user_id . "'", SELECT);
    if ($row) {
       $is_wiped = 0;
       $status = $row->status;
-      $is_banned = $row->is_banned; 
+      if (IsBanned($user_id)) {$is_banned = 1;} else {$is_banned = 0;}
    } else {
       $is_wiped = 1;
    }
@@ -2137,7 +2122,7 @@ function WikiModOptions($user_id,$thread_id,$page,$post_position) {
 	   }  
    }
 
-   if (is_banned($user_id)) {
+   if (IsBanned($user_id)) {
 	   $is_global_banned = 1;
    }
    
@@ -2663,130 +2648,6 @@ function pt_block_list($user_id) {
 	return $block_list;
 }
 
-function PostThreadToQueue($user_id, $forum_id, $content_of_thread, $thread_title, $wiki_type=0, $comment_type=0) {
-	global $settings;
-    $img_ret_val = array();
-	
-    if ($thread_title == "") {$thread_title = "Untitled";}
-   
-    $row = perform_query("select status from user where user_id='" . $user_id . "'", SELECT);
-	$status = $row->status;
-	
-	if ($msg = IsBanned(Check_Auth())) { return "-1^?".intext("You are not permitted to post a new thread").". ".$msg;}
-
-	if (mb_strlen($content_of_thread) > $settings->max_post_length) {
-	   return "-1^?".intext("Post is too long, maximum size is")." ". $settings->max_post_length . " ".intext("characters").".";
-	}	
-	if (mb_strlen(trim($content_of_thread)) == 0) {
-	   return "-1^?".intext("Your post is empty");
-	}	
-
-	if (is_flood()) {
-	   return "-1^?".intext("Flood attack detected, please wait a while before posting");
-	}	
-	
-	if ($forum_id == 13) {
-		if (mb_strlen($thread_title) > $settings->size_of_article_title) { 
-		   return "-1^?".intext("Article title is too long");
-		}	
-	} else {
-		if (mb_strlen($thread_title) > $settings->size_of_thread_title) { 
-		   return "-1^?".intext("Thread title is too long");
-		}
-	}
-
-	$user_status = GetStatus($user_id);
-	
-	if ($forum_id == 13) {	
-		if ($settings->status_to_create_articles > $user_status) {
-	       return "-1^?".intext("User status not high enough to post articles");
-		}  
-	} else {
-	    if ($settings->status_to_start_threads > $user_status) {
-	       return "-1^?".intext("User status not high enough to post threads");
-	    }
-	}
-	
-	if (!IsValidForum($forum_id)) {
-	   return "-1^?".intext("This is not a valid forum.");
-	}
-	
-    $block_allow_list = user_block_list($user_id);
-   
-    wordfilter_check($thread_title);
-   
-	$ret_value = "";
-	$first_query = "insert thread "
-    		. "\n set "
-    		. "\n  author_id='" . $user_id . "',"
-    		. "\n  title='" . $thread_title . "',"
-    		. "\n  block_allow_list='" . $block_allow_list . "',"			
-    		. "\n  tstamp=now(),"
-    		. "\n  creation_time=now(),"			
-    		. "\n  num_posts=1,"
-    		. "\n  needs_approval=1,"			
-			. "\n  state = ".$comment_type.","
-    		. "\n  forum_id=" . $forum_id;
-	$thread_id = perform_query($first_query,INSERT); 
-	$thread_id = rtrim($thread_id);
-	$ret_value .= "^?" . $thread_id;
-	
-	$row = perform_query("SELECT * FROM user WHERE user_id=" . $user_id, SELECT);	
-    $avatar_id=$row->current_avatar; 
-    $username=$row->username;
-    $my_threads=$row->my_threads . "," . $thread_id . ":1";	
-	
-	hyperlinks_check($content_of_thread);
-	rich_text_check($content_of_thread);
-	wordfilter_check($content_of_thread);		
-	emote_check($content_of_thread);
-	youtube_check($content_of_thread);			
-    $img_ret_val = image_check2($content_of_thread,$forum_id,$user_id);
-	$file_ret_val = file_check2($content_of_thread,$forum_id,$user_id);	
-	image_links_check($content_of_thread);		
-	make_spaces_check($content_of_thread);
-	
-    $post_query = "insert post "
-    	. "\n set "
-    	. "\n  author_id='" . $user_id . "',"
-    	. "\n  message='" . $content_of_thread . "',"
-    	. "\n  thread_id=" . $thread_id . ","
-    	. "\n  tstamp=now(),"
-    	. "\n  ip_address='" . $_SERVER['REMOTE_ADDR'] . "'," 		
-    	. "\n  avatar_id=" . $avatar_id . ","    		
-    	. "\n  reply_num=" . 1 . ","
-		. "\n  type = ".$wiki_type.","					
-    	. "\n  author_name='" . mysql_real_escape_string($username) . "'";   		
-	$post_id = perform_query($post_query,INSERT);
-	
-	foreach ($img_ret_val as $i) {
-	    perform_query("update file set post_id=" . $post_id . ", thread_id=" .$thread_id." where file_id=" . $i,UPDATE);
-    }
-	foreach ($file_ret_val as $i) {
-	    perform_query("update file set post_id=" . $post_id . ", thread_id=" .$thread_id." where file_id=" . $i,UPDATE);
-    }
-	
-    perform_query("update thread set last_post_id_num='" . $post_id . "' where thread_id=" . $thread_id,UPDATE);
-	perform_query("update user set my_threads='" . $my_threads . "' where user_id=" . $user_id,UPDATE);
-	perform_query("UPDATE user SET num_posts=num_posts+1 WHERE user_id=" . $user_id,UPDATE); 
-	
-	//the my_private_threads column in the System account is being used to store the user ids of users who want to
-	//automatically watch all new threads.  
-	$row = perform_query("select my_private_threads from user where user_id=0", SELECT);
-    $user_list = explode(",",$row->my_private_threads);  
-	foreach ($user_list as $user) {
-	   if ($user == "") {continue;}
-	   if ($user == $user_id) {continue;}
-	   
-	   $row2 = perform_query("select my_threads from user where user_id=$user", SELECT);
-       $my_threads=$row2->my_threads . "," . $thread_id . ":0";		
-       perform_query("update user set my_threads='".$my_threads."' WHERE user_id=$user",UPDATE); 
-	}
-	
-	return "1^?" . $thread_id;
-}
-
-
 function PostThread($user_id, $forum_id, $content_of_thread, $thread_title, $wiki_type=0, $comment_type=0) {
 	global $settings;
     $img_ret_val = array();
@@ -2839,7 +2700,7 @@ function PostThread($user_id, $forum_id, $content_of_thread, $thread_title, $wik
    
     wordfilter_check($thread_title);
    
-    if ($user_status == 0 && $settings->post_approval) {$extra = "\n needs_approval = 1,";} else {$extra = "";}
+    if (($user_status == 0 && $settings->post_approval) || ($status == 0 && lockdown_button_check(POSTAPPROVAL))) {$extra = "\n needs_approval = 1,";} else {$extra = "";}
    
 	$ret_value = "";
 	$first_query = "insert thread "
@@ -2909,7 +2770,7 @@ function PostThread($user_id, $forum_id, $content_of_thread, $thread_title, $wik
        perform_query("update user set my_threads='".$my_threads."' WHERE user_id=$user",UPDATE); 
 	}
 	
-	if (($user_status == 0) && $settings->post_approval && ($force == 0)) {
+	if ((($user_status == 0) && $settings->post_approval) || ($status == 0 && lockdown_button_check(POSTAPPROVAL))) {
 	   add_to_approval_queue('thread',$user_id,$thread_id,$post_id,'',$forum_id,$thread_title);
        return "-2^?".intext("Your post has been received and is pending approval");
 	}
@@ -2965,7 +2826,7 @@ function PostMsg($user_id, $theinput, $thread_id, $force=0) {
 	$username=$row2->username; 
 	$avatar_id=$row2->current_avatar; 
 	
-	if (!($status == 0 && $settings->post_approval && $force == 0)) {
+	if (!($status == 0 && ($row->forum_id != 12) && ($force == 0) && $settings->post_approval) && !(($status == 0) && ($force == 0) &&($row->forum_id != 12) && lockdown_button_check(POSTAPPROVAL))) {
 		$my_threads=$row2->my_threads; 
 
 		if (preg_match('/,' . $thread_id . ':[0-9]+/',$my_threads) != 0) {
@@ -2987,7 +2848,7 @@ function PostMsg($user_id, $theinput, $thread_id, $force=0) {
     image_links_check($theinput);	
 	make_spaces_check($theinput);
 
-	if ($status == 0 && $settings->post_approval && $force == 0) {
+	if (($status == 0 && ($row->forum_id != 12) && $settings->post_approval && ($force == 0)) || (($status == 0) && ($force == 0) && ($row->forum_id != 12) && lockdown_button_check(POSTAPPROVAL))) {
 	   $extra = "\n needs_approval = 1,";
 	} else {
        $extra = "";
@@ -3007,7 +2868,7 @@ function PostMsg($user_id, $theinput, $thread_id, $force=0) {
 			
 	$post_id = perform_query($post_query, INSERT);	
 	
-	if (!($status == 0 && $settings->post_approval && $force == 0)) {
+	if (!($status == 0 && ($row->forum_id != 12) && $settings->post_approval && ($force == 0)) && !(($status == 0) && ($force == 0) && ($row->forum_id != 12) && lockdown_button_check(POSTAPPROVAL))) {
        perform_query("update thread set num_posts=" . $num_posts . ",last_post_id_num='" . $post_id . "' where thread_id=" . $thread_id, UPDATE);
     }
 	
@@ -3018,15 +2879,15 @@ function PostMsg($user_id, $theinput, $thread_id, $force=0) {
 	    perform_query("update file set post_id=" . $post_id . " where file_id=" . $i . " and post_id=0", UPDATE);
     }
 	
-	if ($status == 0 && $settings->post_approval && $force == 0) {
+	if (($status == 0 && ($row->forum_id != 12) && $settings->post_approval && ($force == 0)) || (($status == 0) && ($force == 0) && ($row->forum_id != 12) && lockdown_button_check(POSTAPPROVAL))) {
 	   add_to_approval_queue('post',$userid,$thread_id,$post_id,'',$row->forum_id);
        return "-2^?".intext("Your post has been received and is pending approval");
     } else {
 	   perform_query("UPDATE user SET num_posts=num_posts+1 WHERE user_id=" . $userid, UPDATE); 
-	   return $thread_id . "^?" . $num_posts . "^?" . $post_id;
+	   return $thread_id . "^?" . $num_posts . "^?" . $post_id . "^?";
 	}
 }
- 
+
 function is_flood() {
    global $settings;
      
@@ -3667,7 +3528,7 @@ function Login($user,$pass,$rem){
 	   }
 	}	
 
-	if ($row->is_banned == 2) {
+	if (IsBanned($row->user_id)) {
 		$msg = IsBanned($row->user_id); 
 		if ($msg) {return "-1^?".$msg;}
 	}

@@ -42,35 +42,31 @@ if ($thread_watching && $hipt) {
 }
 
 $output .= "^*" . SignalsCheck($thread_watching,$last_wiki_revision,$auth_ret);
-
 $output .= "^*" . CheckEventQueue($auth_ret); 
 
 echo "5^*" . $output;
 
 function SignalsCheck($thread_watching,$last_wiki_revision,$user_id) {
-    //returns bitfield, first digit = site reload, second digit = forum reload, 3rd digit = thread reload
     $ret_val = 0;
 	
 	if ($thread_watching && ($last_wiki_revision != "")) {
 	   $ret_val += CheckForWikiUpdate($thread_watching,$last_wiki_revision,$user_id);
 	}
 
-
-	
 	return $ret_val;
 }
 
 function CheckForWikiUpdate($thread_watching,$last_wiki_revision,$user_id) {
-    $flag = 0; 
+    $ret_val = 0; 
+
     $wiki_query = "select * from post where reply_num = 1 and thread_id=$thread_watching and author_id != $user_id and revision > $last_wiki_revision";
     $row = perform_query($wiki_query,SELECT);    	  
     if ($row) {
-	   $flag = 1;
+	   $ret_val = 4;
 	}
 
-    return $flag;
+    return $ret_val;
 }
-
 
 function CheckEventQueue($user_id) {
     $count = 0;

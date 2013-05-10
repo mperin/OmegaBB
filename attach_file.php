@@ -137,7 +137,6 @@ function add_image2($user_id,$forum_id,$filename,$mime_type){
 
 if(IsSet($ftmp)) :
 do {
-    include('omegabb.php');
 	$thread_id=GetParam($_REQUEST,'thread_id','');
 	$forum_id=GetParam($_REQUEST,'forum_id','');	
 	$file_id = 0;

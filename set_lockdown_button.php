@@ -20,7 +20,7 @@ header( 'Expires: 0' );
 	
 	if ($turn_off) {echo UnsetLockdownButton(); return;}
 	
-	if (!isAdmin($auth_ret) && ($code > 7 || $expire_time == "i") ) {
+	if (!isAdmin($auth_ret) && ($code > 15 || $expire_time == "i") ) {
     	echo "-1^?".intext("You must be an administrator to do this");
     	return;
     }   

@@ -78,7 +78,7 @@ $language_hash["Cannot moderate this user"] = "text here";
 $language_hash["Name changed"] = "text here";
 $language_hash["Settings updated"] = "text here";
 $language_hash["private"] = "text here";
-$language_hash["never"] = "text here";
+$language_hash["over six months ago"] = "text here";
 $language_hash["now"] = "text here";
 $language_hash["Name is too long"] = "text here";
 $language_hash["User status not high enough to post threads"] = "text here";
@@ -213,4 +213,8 @@ $language_hash["Unable to determine your current version.  version.txt is missin
 $language_hash["Your developmental version is more recent than the offical version."] = "text here";
 $language_hash["Your version is up to date."] = "text here";
 $language_hash["A newer version is available.  Go to www.omegabb.com to download it."] = "text here";
+$language_hash["Post approved"] = "text here";
+$language_hash["Post disapproved"] = "text here";
+$language_hash["Rejected posting made by"] = "text here";
+$language_hash["Your post has been received and is pending approval"] = "text here";
 ?>

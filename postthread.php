@@ -46,4 +46,4 @@ header( 'Expires: 0' );
 	} else {
         echo PostThread($user_id, $forum_id, $content_of_thread, $thread_title);
     }
-?> 
+?>

@@ -593,8 +593,9 @@ function Ban($time,$user_id,$thread_id,$dupe_check) {
 	
 	if ($dupe_check) {
 		//check for other accounts with the same IP and ask the mod if they want them banned as well
-		$cur = perform_query("select user_id, username from user where is_banned = 0 and last_ip ='".$row->last_ip."'",MULTISELECT);
+		$cur = perform_query("select user_id, username from user where last_ip ='".$row->last_ip."'",MULTISELECT);
 		while ($row3 = mysql_fetch_array( $cur )) {
+		    if ($row3["user_id"] == $user_id) {continue;}		
 			$return_code = 2;
 			$additional_bans++;
 			$extra .= $row3["user_id"] . "^?" . $row3["username"] . "^?";
@@ -641,8 +642,9 @@ function Mute($time,$user_id,$thread_id,$dupe_check) {
 	
 	if ($dupe_check) {
 		//check for other accounts with the same IP and ask the mod if they want them banned as well
-		$cur = perform_query("select user_id, username from user where is_banned = 0 and last_ip ='".$row->last_ip."'",MULTISELECT);
+		$cur = perform_query("select user_id, username from user where last_ip ='".$row->last_ip."'",MULTISELECT);
 		while ($row3 = mysql_fetch_array( $cur )) {
+		    if ($row3["user_id"] == $user_id) {continue;}
 			$return_code = 7;
 			$additional_bans++;
 			$extra .= $row3["user_id"] . "^?" . $row3["username"] . "^?";

@@ -29,10 +29,11 @@ define('INSERT',4);
 
 define('NEWUSERCAPTCHA',1);
 define('NONEWACCOUNTS',2);
-define('MUSTLOGIN',4);
-define('FORUMDOWN',8);
-define('PTDOWN',16);
-define('SITEDOWN',32);
+define('POSTAPPROVAL',4);
+define('MUSTLOGIN',8);
+define('FORUMDOWN',16);
+define('PTDOWN',32);
+define('SITEDOWN',64);
 
 function lockdown_button_check($code) {
     global $settings;
