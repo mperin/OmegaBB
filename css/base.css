@@ -228,7 +228,7 @@ table#bottomrow td { border:medium none; padding:5px; }
 
 .tab {
     display:table-cell;
-	width: 10%;
+	width: 7%;
 	background-color:%%color1%%; 
 	font-size:115%; 
 	height:30px; 
@@ -240,7 +240,7 @@ table#bottomrow td { border:medium none; padding:5px; }
 
 .tabselected {
     display:table-cell;
-	width: 10%;
+	width: 7%;
 	background-color:%%color2%%; 
 	font-size:115%; 
 	height:30px; 

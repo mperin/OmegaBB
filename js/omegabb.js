@@ -276,13 +276,12 @@ function show_tabs() {
    if (settings.enable_articles) {html += '<div id="articlestab" class="tab" ><a onclick="javascript:get_tab(\'articles\')">'+settings.articles_tab_name+'</a></div>';
    } else {html += '<div id="articlestab" class="tab" STYLE="display:none;width:0%;min-width:0%;"></div>';}
 
-   var number = 5;
+   var number = 10;
    var part = "";
    if (settings.enable_forums) {	
 	   for (i = 0; i < settings.total_forums; i += settings.forums_per_tab) {
     	  part = '<div id="forumtab'+number+'" class="tab" ><a onclick="javascript:get_tab(\'forum'+number+'\')">'+settings.forum_tab_names[number]+'</a></div>' + part;
 		  number--;   
-		  if (number == -2) {alert(intext("invalid configuration, you may only have up to six forum tabs")); break;}
 	   }
    } 
    html += part;
@@ -465,6 +464,36 @@ function get_tab(page){
         globals.current_forum_tab = 5;		
 		show_forum();
 	}		
+    if (page == "forum6") {
+        set_display("top_area:inline","midrow:none","content_area:none","inputdiv:none","topbar:none","bottombar:none");
+		set_class("forumtab6");
+        globals.current_forum_tab = 6;
+        show_forum();
+	}
+	if (page == "forum7") {
+        set_display("top_area:inline","midrow:none","content_area:none","inputdiv:none","topbar:none","bottombar:none");
+        set_class("forumtab7");
+        globals.current_forum_tab = 7;
+		show_forum();
+	}
+	if (page == "forum8") {
+        set_display("top_area:inline","midrow:none","content_area:none","inputdiv:none","topbar:none","bottombar:none");
+        set_class("forumtab8");
+        globals.current_forum_tab = 8;
+		show_forum();
+	}
+	if (page == "forum9") {
+        set_display("top_area:inline","midrow:none","content_area:none","inputdiv:none","topbar:none","bottombar:none");
+        set_class("forumtab9");
+        globals.current_forum_tab = 9;
+		show_forum();
+	}	
+	if (page == "forum10") {
+        set_display("top_area:inline","midrow:none","content_area:none","inputdiv:none","topbar:none","bottombar:none");
+        set_class("forumtab10");
+        globals.current_forum_tab = 10;
+		show_forum();
+	}	
 	if (page == "articles") {
         set_display("top_area:inline","midrow:none","content_area:none","inputdiv:none","topbar:none","bottombar:none");
         set_class("articlestab");
@@ -488,7 +517,7 @@ function set_display() {
 }
 
 function set_class(selected_tab){
-    var tab_array = ['first_tab', 'second_tab', 'articlestab', 'forumtab0', 'forumtab1', 'forumtab2', 'forumtab3', 'forumtab4', 'forumtab5', 'pttab', 'second_last_tab', 'last_tab'];
+    var tab_array = ['first_tab', 'second_tab', 'articlestab', 'forumtab0', 'forumtab1', 'forumtab2', 'forumtab3', 'forumtab4', 'forumtab5', 'forumtab6', 'forumtab7', 'forumtab8', 'forumtab9', 'forumtab10', 'pttab', 'second_last_tab', 'last_tab'];
 
     for (i = 0;i < tab_array.length ;i++) {
 	   var foo = tab_array[i];
@@ -550,9 +579,9 @@ function show_forum() {
 		   var myAjax3 = new Ajax.Request('popforum.php', {method: 'get', parameters: '', onComplete: populate_forum});
 		   return;
 	    } 
-		end = 11 - ((5 - globals.current_forum_tab) * settings.forums_per_tab);
+		end = 11 - ((10 - globals.current_forum_tab) * settings.forums_per_tab);
 		start = end - settings.forums_per_tab;
-		
+			
 		//if the total number forums dosen't divide evenly with the total number of tabs, then you have to do this adjustment
 		if ((settings.total_forums % settings.forums_per_tab != 0) && (5 - globals.current_forum_tab) == (Math.floor((settings.total_forums / settings.forums_per_tab)))) {
 		   start += settings.forums_per_tab - (settings.total_forums % settings.forums_per_tab);

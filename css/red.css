@@ -228,7 +228,7 @@ table#bottomrow td { border:medium none; padding:5px; }
 
 .tab {
     display:table-cell;
-	width: 10%;
+	width: 7%;
 	background-color:#A40000; 
 	font-size:115%; 
 	height:30px; 
@@ -240,7 +240,7 @@ table#bottomrow td { border:medium none; padding:5px; }
 
 .tabselected {
     display:table-cell;
-	width: 10%;
+	width: 7%;
 	background-color:#8E0000; 
 	font-size:115%; 
 	height:30px; 
@@ -446,9 +446,6 @@ color: #FFF}
 	text-decoration:none;
 }.postbutton:hover {
 	background-color:#A40000;
-}.postbutton:active {
-	position:relative;
-	top:1px;
 }
 
 .gifttext {
@@ -469,7 +466,6 @@ color: #FFF}
 }
   
 #giftscroll {
-   
     position: relative;
     /*left: -29px;
 	 bottom: -35px;

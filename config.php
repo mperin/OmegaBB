@@ -60,7 +60,7 @@ $settings->articles_indexable = true;
 $settings->enable_forums = true;  //Forums
 $settings->total_forums = 9;  //Total number of forums, between 1 and 11.  
 $settings->forums_per_tab = 3;  //Number of forums that appear on one tab, must be between 1 and 4				
-$settings->forum_tab_names = array("Forum A","Forum B","Forum C","Forum D","Forum E","Forum F");  
+$settings->forum_tab_names = array("Forum A","Forum B","Forum C","Forum D","Forum E","Forum F","Forum H","Forum I","Forum J","Forum K","Forum L");  
 $settings->forum_topic_names = array("Topic 1","Topic 2","Topic 3","Topic 4","Topic 5","Topic 6","Topic 7","Topic 8","Topic 9","Topic 10","Topic 11");  			
 $settings->forums_indexable = "true";
 

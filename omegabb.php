@@ -1,6 +1,6 @@
 <?php
 /* 
-OmegaBB developmental version - build 218 Copyright (c) 2013, Ryan Smiderle.  All rights reserved.
+OmegaBB developmental version - build 219 Copyright (c) 2013, Ryan Smiderle.  All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted
 provided that the following conditions are met:
@@ -384,7 +384,7 @@ function SaveSiteSettings() {
     "status_to_see_fb_li_profile" => "int,0-5",	
     "status_to_hard_delete" => "int,3-6",	
     "tab_names" => "string-array,5",	
-    "forum_tab_names" => "string-array,6",		
+    "forum_tab_names" => "string-array,11",		
     "forum_topic_names" => "string-array,11",			
     "name_of_status_2" => "string",	
     "avatars_same_size" => "bool",	
