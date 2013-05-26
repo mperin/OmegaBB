@@ -85,7 +85,25 @@ CREATE TABLE IF NOT EXISTS `log` (
   `tstamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `user_id` int(11) NOT NULL,
   PRIMARY KEY (`log_id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=24 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `gift`
+--
+
+CREATE TABLE IF NOT EXISTS `gift` (
+  `sender` int(11) NOT NULL,
+  `receiver` int(11) NOT NULL,
+  `gift` varchar(255) NOT NULL,
+  `message` varchar(255) NOT NULL,
+  `displayorder` int(11) NOT NULL,
+  `gift_id` int(11) NOT NULL AUTO_INCREMENT,
+  PRIMARY KEY (`gift_id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+
 
 -- --------------------------------------------------------
 
@@ -254,11 +272,11 @@ CREATE TABLE IF NOT EXISTS `queue` (
   `event_id` int(11) NOT NULL AUTO_INCREMENT,
   `sender` int(11) NOT NULL,
   `receiver` int(11) NOT NULL,
-  `type` enum('thread','post','editpost','editwiki') NOT NULL,
+  `type` enum('gift','thread','post','editpost','editwiki') NOT NULL,
   `state` int(11) NOT NULL DEFAULT '0',
   `wiki_type` tinyint(4) NOT NULL DEFAULT '0',
   `block_allow_list` mediumtext,
-  `data` text CHARACTER SET utf8 COLLATE utf8_bin,
+  `data` varchar(255) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
   `data2` varchar(255) NOT NULL,
   `date` datetime NOT NULL,
   `thread_id` int(11) NOT NULL DEFAULT '0',
@@ -266,7 +284,7 @@ CREATE TABLE IF NOT EXISTS `queue` (
   `forum_id` int(11) NOT NULL DEFAULT '0',
   `post_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`event_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1;
 
 -- --------------------------------------------------------
 
@@ -407,6 +425,8 @@ CREATE TABLE IF NOT EXISTS `user` (
   `last_ip` varchar(20) DEFAULT NULL,
   `ban_expire_time` datetime DEFAULT NULL,
   `prune_time` datetime DEFAULT NULL,
+  `credits` int(11) NOT NULL DEFAULT '0',
+  `credit_allowance_time` datetime DEFAULT NULL,
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `username` (`username`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=108 ;

@@ -1,9 +1,5 @@
-./cssmaker.pl darkblue.keys > darkblue.css
+./cssmaker.pl facebook.keys > facebook.css
+./cssmaker.pl blue.keys > blue.css
 ./cssmaker.pl green.keys > green.css
-./cssmaker.pl darkred.keys > darkred.css
-./cssmaker.pl black-and-white.keys > black-and-white.css
-./cssmaker2.pl facebook.keys > facebook.css
-./cssmaker2.pl new-darkblue.keys > new-darkblue.css
-./cssmaker2.pl new-green.keys > new-green.css
-./cssmaker2.pl new-darkred.keys > new-darkred.css
-./cssmaker2.pl black-and-green.keys > black-and-green.css
+./cssmaker.pl red.keys > red.css
+

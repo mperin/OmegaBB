@@ -278,7 +278,6 @@ if ($action == "unmute") {
    $return_stuff = UnMute($user_id);
 }    		
 
-
 if ($action == "delete_avatar") {
 	if (IsMod($user_id) && !IsAdmin($auth_ret) ) {
 	   echo "-1^?".intext("Cannot perform this action on a moderator.");
@@ -321,11 +320,13 @@ if ($action == "change_username2") {
 	   return;
 	}				
    $return_stuff = ChangeUsername2($new_name,$user_id);
-}    		
+}
+
 $temp_array = explode("^?",$return_stuff);
 if (intval($temp_array[0]) > 0) {
    LogEvent(1,$temp_array[1]);
 }
+
 echo $return_stuff;
 return;
 
@@ -830,6 +831,8 @@ function KickFromPT($user_id,$thread_id) {
 }
 
 function RaiseStatus($user_id) {
+    global $settings;
+
 	$row = perform_query("select * from user where user_id='". $user_id . "'",SELECT); 
     if (!$row) {return "-1^?".intext("User not found");}
 	
@@ -837,6 +840,20 @@ function RaiseStatus($user_id) {
     	. "\n set "
 		. "\n status='1'"
         . " where user_id='". $user_id ."'",UPDATE); 	
+		
+	if ($settings->bonus && ($settings->bonus_status == 1)) {
+	   if (($settings->bonus_credits + $row->credits) > $settings->max_credits) {
+			perform_query("update user "
+				. "\n set "			
+				. "\n credits='" . $settings->max_credits . "'"
+				. " where user_id='$user_id'",UPDATE); 	 
+	   } else {
+			perform_query("update user "
+				. "\n set "		
+				. "\n credits=credits+'" . $settings->bonus_credits . "'"
+				. " where user_id='$user_id'",UPDATE); 	 
+	   }
+    }	
 
     return "1^?%%u" . $user_id . ":" . $row->username . "; " . intext("status set to"). " 1"; 
 }
@@ -899,12 +916,27 @@ function DeleteCurrentAvatar($user_id) {
 }
 
 function GiveModStatus($user_id) {
+    global $settings;
     $row = perform_query("select username from user where user_id='". $user_id . "'",SELECT);   
    
 	perform_query("update user "
     	. "\n set "
 		. "\n status='3'"
         . " where user_id='". $user_id ."'",UPDATE); 	
+
+	if ($settings->bonus && ($settings->bonus_status == 3)) {
+	   if (($settings->bonus_credits + $row->credits) > $settings->max_credits) {
+			perform_query("update user "
+				. "\n set "			
+				. "\n credits='" . $settings->max_credits . "'"
+				. " where user_id='$user_id'",UPDATE); 	 
+	   } else {
+			perform_query("update user "
+				. "\n set "		
+				. "\n credits=credits+'" . $settings->bonus_credits . "'"
+				. " where user_id='$user_id'",UPDATE); 	 
+	   }
+    }
 
     return "1^?%%u" . $user_id . ":" . $row->username . "; " . intext("was given moderator status"); 
 }
@@ -921,12 +953,27 @@ function RevokeModStatus($user_id) {
 }
 
 function GiveEditorStatus($user_id) {
+    global $settings;
     $row = perform_query("select username from user where user_id='". $user_id . "'",SELECT);   
 	
 	perform_query("update user "
     	. "\n set "
 		. "\n status='2'"
         . " where user_id='". $user_id ."'",UPDATE); 	
+
+	if ($settings->bonus && ($settings->bonus_status == 2)) {
+	   if (($settings->bonus_credits + $row->credits) > $settings->max_credits) {
+			perform_query("update user "
+				. "\n set "			
+				. "\n credits='" . $settings->max_credits . "'"
+				. " where user_id='$user_id'",UPDATE); 	 
+	   } else {
+			perform_query("update user "
+				. "\n set "		
+				. "\n credits=credits+'" . $settings->bonus_credits . "'"
+				. " where user_id='$user_id'",UPDATE); 	 
+	   }
+    }
 
     return "1^?%%u" . $user_id . ":" . $row->username . "; " . intext("status set to"). " 2"; 
 }

@@ -26,6 +26,7 @@
 			jQuery.noConflict();
 			jQuery().ready(function() { });
 		</script>
+
 		<link rel="icon" href="img/favicon.ico" type="image/png">
 	</head>
 
@@ -45,7 +46,9 @@
 			<div id="midrow"></div>
 			<div id="topbar"></div>		
 			<div id="content_area">
-				<img src="img/indicator.gif">
+				<div style="width:100%;max-width:1250px;padding-top:10%;text-align:center;">
+				   <img src="img/indicator.gif">
+				</div>
 			</div>
 			<div id="bottombar"></div>
 			<div id="inputdiv"></div>

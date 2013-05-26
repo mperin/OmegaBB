@@ -1,5 +1,5 @@
 /* 
-OmegaBB developmental version - build 217  Copyright (c) 2013, Ryan Smiderle.  All rights reserved.
+%%fulltitle%% Copyright (c) 2013, Ryan Smiderle.  All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted
 provided that the following conditions are met:
@@ -57,6 +57,7 @@ globals.hitf_semaphore = 0;
 globals.popforum_mutex = 0;
 globals.poppt_mutex = 0;
 globals.temp_settings = new Hash();
+globals.gift_scroll_position = 0;
 
 var account_info = new Object();
 account_info.user_id = 0;
@@ -66,6 +67,7 @@ account_info.theme = "";
 account_info.avatar_number = 0;
 account_info.total_avatars = 0;
 account_info.my_threads = "";
+account_info.credits = 0;
 
 //message center hashes
 var mc_title_hash = new Hash();
@@ -616,7 +618,7 @@ function show_forum() {
 	   if (!(settings.enable_private_threads) && (j == 11)) {continue;}		  
 	   display_string += '<td class="scroll"><font size="+1">';
 	   if ((cache.thread_title[j][(cache.current_page[j] + 1) * 10] != "&nbsp") && (cache.thread_title[j][(cache.current_page[j] + 1) * 10] != undefined) ) {
-		  display_string += '<a onclick="javascript:forum_scroll('+ j + "," + (cache.current_page[j] + 1) +',0)" >&#9660;</a>'; 
+		  display_string += '<a onclick="javascript:forum_scroll('+ j + "," + (cache.current_page[j] + 1) +',0)" >&#9660;</a>';
 	   } else {
 	      display_string += '&nbsp;';
 	   }
@@ -1853,16 +1855,19 @@ function watch_thread_response(originalRequest){
 	   alert(temp_array[1]);
 	   return;
 	}
+	var thread_id = parseInt(temp_array[1]);
+	var total_posts = parseInt(temp_array[2]);
 	
-   mythreads_hash.set(thread_id,total_posts);
-   
-   temp_string = $('midrow').innerHTML; 
-   var temp_string2 = temp_string.replace(/inline/,"foobar");
-   var temp_string3 = temp_string2.replace(/none/,"inline");
-   var temp_string4 = temp_string3.replace(/foobar/,"none");
-   $('midrow').innerHTML = temp_string4;
-   
-   jQuery().ready(function() {
+	mythreads_hash.set(thread_id,total_posts);
+
+	temp_string = $('midrow').innerHTML; 
+
+	var temp_string2 = temp_string.replace(/inline/,"foobar");
+	var temp_string3 = temp_string2.replace(/none/,"inline");
+	var temp_string4 = temp_string3.replace(/foobar/,"none");
+	$('midrow').innerHTML = temp_string4;
+
+	jQuery().ready(function() {
 		jQuery("#thread_mod_box").fancybox({
 			'width'				: 400,
 			'height'			: 230,
@@ -1887,16 +1892,19 @@ function unwatch_thread_response(originalRequest){
 	   alert(temp_array[1]);
 	   return;
 	}
+	var thread_id = parseInt(temp_array[1]);
+	
+	mythreads_hash.unset(thread_id);
+	mc_title_hash.unset(thread_id);
+	mc_num_posts_hash.unset(thread_id);
+	
+	temp_string = $('midrow').innerHTML; 
+	temp_string2 = temp_string.replace(/inline/,"foobar");
+	temp_string3 = temp_string2.replace(/none/,"inline");
+	temp_string4 = temp_string3.replace(/foobar/,"none");
+	$('midrow').innerHTML = temp_string4;
 
-   mythreads_hash.unset(thread_id);
-   
-   temp_string = $('midrow').innerHTML; 
-   temp_string2 = temp_string.replace(/inline/,"foobar");
-   temp_string3 = temp_string2.replace(/none/,"inline");
-   temp_string4 = temp_string3.replace(/foobar/,"none");
-   $('midrow').innerHTML = temp_string4;
-   
-   jQuery().ready(function() {
+	jQuery().ready(function() {
 		jQuery("#thread_mod_box").fancybox({
 			'width'				: 400,
 			'height'			: 230,
@@ -2113,7 +2121,13 @@ function process_login(login_array) {
 	account_info.avatar_number = parseInt(login_array[7]);
 	account_info.total_avatars = parseInt(login_array[8]);
 	account_info.my_threads = login_array[9];
-
+	
+	if (login_array[10] == 'u') {
+	   account_info.credits = intext("unlimited");
+	} else {
+	   account_info.credits = parseInt(login_array[10]);
+	}
+	
 	$('Panel').innerHTML = '<div id="myavatar" class="obbimage"></div>' +
 '<div class="obbtitle">'+settings.website_title+'</div>' +
 '<div class="obbblurb">'+settings.website_blurb+'</div>' +  
@@ -2180,7 +2194,7 @@ function show_frame(filename,is_div){
 	}
 
 	if (is_div) {
-		$('content_area').innerHTML = '<div style="width:100%;max-width:1250px;padding-top:10%;font-size:22px;font-weight:bold;color:#bbb;text-align:center;"><img border="0" src="img/indicator.gif"> </div>';
+		$('content_area').innerHTML = '<div style="width:100%;max-width:1250px;padding-top:10%;text-align:center;"><img border="0" src="img/indicator.gif"> </div>';
 		var myAjax = new Ajax.Request("get_frame.php", {method: 'post', parameters: "page=" + filename, onComplete: show_frame_response}); 
 	} else {
 		var iframewidth = 1030;
@@ -2218,9 +2232,10 @@ function emotes_list_response(originalRequest) {
    var emote_list = "";
 
    if (error_code(temp_array)) {
+      $('content_area').innerHTML = "";
       alert(temp_array[1]);
 	  return;
-   }	  
+   }
    
    var emote_count = parseInt(temp_array[1]);
    
@@ -2229,7 +2244,7 @@ function emotes_list_response(originalRequest) {
       name = name.replace(/\..*/ig,'');   
       name = ':' + name + ':';
       emote_list += '<tr> <td class="coluserlistone">' + name + 
-       '</td> <td class="coluserlisttwo">' + '<img title="'+name+'" src="emotes/' +  temp_array[i+2] + '"></td></tr>';
+       '</td> <td class="coluserlisttwo">' + '<img title="'+name+'" src="file.php?emote=' +  temp_array[i+2] + '"></td></tr>';
    }
    
    globals.content_height = "";
@@ -2260,45 +2275,52 @@ function set_corner_avatar(id,avatar) {
 	$('myavatar').innerHTML = display;
 }
 
-//code for the Help drop-down button
-//Copyright 2006-2007 javascript-array.com
-var ddtimeout       = 500;
-var ddclosetimer	= 0;
-var ddmenuitem      = 0;
+// Copyright 2006-2007 javascript-array.com
+var timeout	= 500;
+var closetimer	= 0;
+var ddmenuitem	= 0;
 
-//open hidden layer
+// open hidden layer
 function mopen(id)
 {	
 	// cancel close timer
 	mcancelclosetime();
 
 	// close old layer
-	if(ddmenuitem) ddmenuitem.style.visibility = 'hidden';
-
-	// get new layer and show it
-	ddmenuitem = document.getElementById(id);
-	ddmenuitem.style.visibility = 'visible';
+	if(ddmenuitem) { 
+		ddmenuitem.style.visibility = 'hidden';
+		ddmenuitem = 0;
+	} else {
+		// get new layer and show it
+		ddmenuitem = document.getElementById(id);
+		ddmenuitem.style.visibility = 'visible';
+	}
 }
 
 // close showed layer
 function mclose()
 {
-	if(ddmenuitem) ddmenuitem.style.visibility = 'hidden';
+    if (ddmenuitem) {
+	   ddmenuitem.style.visibility = 'hidden';
+	   ddmenuitem = 0; 
+	}
 }
 
 // go close timer
 function mclosetime()
 {
-	ddclosetimer = window.setTimeout(mclose, ddtimeout);
+	if (!closetimer) {
+		closetimer = window.setTimeout(mclose, timeout);
+	}
 }
 
 // cancel close timer
 function mcancelclosetime()
 {
-	if(ddclosetimer)
+	if(closetimer)
 	{
-		window.clearTimeout(ddclosetimer);
-		ddclosetimer = null;
+		window.clearTimeout(closetimer);
+		closetimer = null;
 	}
 }
 
@@ -2431,10 +2453,6 @@ function get_site_settings_response(originalRequest) {
 	+ "the second number is number of days the thread has been inactive.  Examples: Close thread 20 days after creation = 20,0 "    
 	+ "Close thread after 3 days of inactivity = 0,3  Close thread after 3 days of inactivity and at least 20 days after creation = 20,3 "
 	+ "To never auto-close threads, set this to 0,0")); 
-	helpline.set("auto_delete_pt",intext("This is the option to cause old or inactive private threads to be automatically deleted.  The first number is the number of days after the private thread was created, "
-    + "the second number is number of days the private thread has been inactive.  Examples: Delete a private thread 20 days after creation = 20,0 "   
-    + "Delete a private thread after 3 days of inactivity = 0,3  Delete a private thread after 3 days of inactivity and at least 20 days after creation = 20,3 "
-    + "To never auto-delete private threads, set this to 0,0")); 	
 	helpline.set("prune_watchlist",intext("If set, threads that have been closed or deleted will be removed from a user's watchlist after at least a week"));
 	helpline.set("prune_deleted_threads",intext("If set, threads that have been set to state 'deleted' will be removed from the database after at least 2 weeks, along with all of its posts and file attachments"));
 	helpline.set("prune_deleted_posts",intext("If set, posts that have been set to state 'deleted' will be removed from the database after at least 2 weeks"));
@@ -2511,8 +2529,11 @@ function get_site_settings_response(originalRequest) {
 	helpline.set("helpmenu6_indexable",intext("Content can be indexed by web search bots"));
 	helpline.set("articles_topic_name",intext("Topic title that appears directly above the articles"));
 	helpline.set("pt_topic_name",intext("Topic title that appears directly above the private threads"));
-	helpline.set("post_approval",intext("If set, new users (status = 0) will need to have their postings approved by a moderator"));
-	
+	helpline.set("post_approval",intext("If set, new users (status = 0) will need to have their postings approved by a moderator.  Note: does not apply to private threads"));
+	helpline.set("gifts_enabled",intext("Allows users to send each other gifts that appear on their profile page, each gift costs one credit.  See the directory ./gifts"));
+	helpline.set("max_credits",intext("Maximum number of credits an user may hold"));
+	helpline.set("unlimited_credits",intext("Users with a status level of this or higher have an unlimited number of credits"));	
+
 	var count = parseInt(temp_array[0]);
 	var html = "";		
 	var inputfield = "";
@@ -2524,7 +2545,11 @@ function get_site_settings_response(originalRequest) {
             if (temp_array[offset] == "first_tab_enabled") { //start of a block of configuration variables that need special formatting
 				html += special_formatting(temp_array,offset,helpline,false);
 			    i += 61;
-                continue;				
+                continue;			
+			} else if (temp_array[offset] == "allowance") {
+				html += special_formatting2(temp_array,offset,helpline,false);
+			    i += 5;
+                continue;			
 			} else if (temp_array[offset+1] == "boolean") {
 				if (temp_array[offset+2] == "true") {
 				   extra = "selected";
@@ -2578,6 +2603,7 @@ function get_site_settings_response(originalRequest) {
 			if (temp_array[offset] == "avatars_allowed") {html += '<tr><td colspan=2><br><b>'+intext('Vanity Settings')+'</b></td></tr>';}					
 			if (temp_array[offset] == "must_login_to_see_forum") {html += '<tr><td colspan=2><br><b>'+intext('Privacy Settings')+'</b></td></tr>';}			
 			if (temp_array[offset] == "auto_close_thread") {html += '<tr><td colspan=2><br><b>'+intext('Cron Settings')+'</b></td></tr>';}				
+			if (temp_array[offset] == "gifts_enabled") {html += '<tr><td colspan=2><br><b>'+intext('Gifts Settings')+'</b></td></tr>';}					
 			if (temp_array[offset] == "name_of_status_2") {html += '<tr><td colspan=2><br><b>'+intext('Miscellaneous Settings')+'</b></td></tr>';}		
 			html += '<tr> <td style="text-align:left;width:15%;" class="coltwo"><acronym title="'+helpline.get(temp_array[offset])+'">' + temp_array[offset] + '</acronym></td> <td class="colthree">' + inputfield + '</td> </tr>';
 			globals.temp_settings.set(temp_array[offset],temp_array[offset+2]);
@@ -2590,7 +2616,11 @@ function get_site_settings_response(originalRequest) {
 				html += special_formatting(temp_array,offset,helpline,true);
 			    i += 61;
                 continue;				
-			}
+			} else if (temp_array[offset] == "allowance") {
+				html += special_formatting2(temp_array,offset,helpline,true);
+			    i += 5;
+                continue;		
+            }				
 		    inputfield = temp_array[offset+2];
 			inputfield = inputfield.replace(/>/ig,'&gt;');        
             inputfield = inputfield.replace(/</ig,'&lt;');      
@@ -2601,7 +2631,8 @@ function get_site_settings_response(originalRequest) {
 			if (temp_array[offset] == "status_to_start_threads") {html += '<tr><td colspan=2><br><b><acronym title="'+intext('0 = new user, 1 = regular user, 2 = star member, 3 = moderator, 5 = administrator')+'">'+intext('Status Settings')+'</b></acronym></td></tr>';}
 			if (temp_array[offset] == "avatars_allowed") {html += '<tr><td colspan=2><br><b>'+intext('Vanity Settings')+'</b></td></tr>';}		
 			if (temp_array[offset] == "must_login_to_see_forum") {html += '<tr><td colspan=2><br><b>'+intext('Privacy Settings')+'</b></td></tr>';}			
-			if (temp_array[offset] == "auto_close_thread") {html += '<tr><td colspan=2><br><b>'+intext('Cron Settings')+'</b></td></tr>';}						
+			if (temp_array[offset] == "auto_close_thread") {html += '<tr><td colspan=2><br><b>'+intext('Cron Settings')+'</b></td></tr>';}
+			if (temp_array[offset] == "gifts_enabled") {html += '<tr><td colspan=2><br><b>'+intext('Gifts Settings')+'</b></td></tr>';}			
 			if (temp_array[offset] == "name_of_status_2") {html += '<tr><td colspan=2><br><b>'+intext('Miscellaneous Settings')+'</b></td></tr>';}			
 			html += '<tr> <td style="text-align:left;width:15%;" class="coltwo"><acronym title="'+helpline.get(temp_array[offset])+'">'+ temp_array[offset] + '</acronym></td> <td class="colthree">' + inputfield + '</td> </tr>';
 		}
@@ -2762,6 +2793,34 @@ function standard_row_layout(title,offset,temp_array,helpline,nudge,readonly) {
 	return return_value;
 }
 
+function special_formatting2(temp_array,offset,helpline,readonly) {
+	if (readonly) {var extra3 = "disabled";} else {var extra3 = "";}
+	
+	for (i = 0; i < 6; i++) {
+	   globals.temp_settings.set(temp_array[offset+(i*3)],temp_array[offset+(i*3)+2]);	
+	}
+
+	if (temp_array[offset+2] == "true") {
+	   extra = "checked=\"checked\"";
+	} else {
+	   extra = "";
+	}	
+	return_value = '<tr><td colspan=2><input '+extra3+' type="checkbox" '+extra+' id="'+temp_array[offset]+'"> '+intext('Users with a status level of at least')+' <input '+extra3+' style="overflow:hidden;width: 10px;" type="text" id="'+temp_array[offset+3]+'" maxlength="1" class="theinputbox" value="'+temp_array[offset+5]+'"> '
+	+intext('receive')+' <input '+extra3+' style="overflow:hidden;width: 10px;" type="text" id="'+temp_array[offset+6]+'" maxlength="1" class="theinputbox" value="'+temp_array[offset+8]+'"> ' + intext('credit(s) per month.');
+	
+	offset += 9;
+	
+	if (temp_array[offset+2] == "true") {
+	   extra = "checked=\"checked\"";
+	} else {
+	   extra = "";
+	}	
+	return_value += '<tr><td colspan=2><input '+extra3+' type="checkbox" '+extra+' id="'+temp_array[offset]+'"> '+ intext("When a user's status is raised to")+' <input '+extra3+' style="overflow:hidden;width: 10px;" type="text" id="'+temp_array[offset+3]+'" maxlength="1" class="theinputbox" value="'+temp_array[offset+5]+'"> '
+	+ intext('they recieve') + ' <input '+extra3+' style="overflow:hidden;width: 10px;" type="text" id="'+temp_array[offset+6]+'" maxlength="1" class="theinputbox" value="'+temp_array[offset+8]+'"> ' + intext('credit(s)');
+	
+	return return_value;
+}
+
 function save_site_settings() {
     var pars = "";
     globals.temp_settings.each(function(pair) {
@@ -2773,10 +2832,11 @@ function save_site_settings() {
 		|| (pair.key == "helpmenu2_indexable") || (pair.key == "helpmenu3_enabled") || (pair.key == "helpmenu3_is_div") || (pair.key == "helpmenu3_indexable")  
 		|| (pair.key == "helpmenu4_enabled") || (pair.key == "helpmenu4_is_div") || (pair.key == "helpmenu4_indexable") || (pair.key == "helpmenu5_enabled")  
 		|| (pair.key == "helpmenu6_enabled") || (pair.key == "helpmenu6_is_div") || (pair.key == "helpmenu6_indexable") || (pair.key == "enable_forums") 
-		|| (pair.key == "enable_articles") || (pair.key == "enable_private_threads")) {
+		|| (pair.key == "enable_articles") || (pair.key == "enable_private_threads") || (pair.key == "helpmenu6_indexable") || (pair.key == "enable_forums") 
+		|| (pair.key == "allowance") || (pair.key == "bonus")) {
 			if ($(pair.key).checked.toString() != pair.value) {pars += "&" + pair.key + "=" + encodeURIComponent($(pair.key).checked);}
 	    } else {
-			if ($(pair.key).value != pair.value) {pars += "&" + pair.key + "=" + encodeURIComponent($(pair.key).value);}
+ 			if ($(pair.key).value != pair.value) {pars += "&" + pair.key + "=" + encodeURIComponent($(pair.key).value);}
 	    }
     }); 
 	var myAjax = new Ajax.Request("save_site_settings.php", {method: 'post', parameters: pars, onComplete: save_site_settings_response});
@@ -3348,15 +3408,10 @@ function gen_settings()
 	$('content_area').innerHTML = '<br><h3>'+intext('Settings')+'</h3><br><h3>'+intext('Change Theme')+':</h3><form action="">'
 		+ '<select id=themesetter name="themes" onchange="javascript:set_theme($(\'themesetter\').value)">'
 		+ '<option>'+intext('Click to choose')+'</option>'		
-        + '<option value="css/facebook.css">'+intext('Facebook')+'</option> '				
-		+ '<option value="css/darkblue.css">'+intext('Dark Blue')+'</option> '
-		+ '<option value="css/darkred.css" >'+intext('Dark Red')+'</option>'		
-		+ '<option value="css/green.css">'+intext('Green')+'</option> '		
-		+ '<option value="css/black-and-white.css">'+intext('Black and White')+'</option>'		
-		+ '<option value="css/new-darkblue.css">'+intext('New Dark Blue')+'</option> '			
-		+ '<option value="css/new-darkred.css">'+intext('New Dark Red')+'</option> '			
-		+ '<option value="css/new-green.css">'+intext('New Green')+'</option> '			
-		+ '<option value="css/black-and-green.css">'+intext('Black and Green')+'</option> '
+        + '<option value="css/facebook.css">'+intext('Facebook')+'</option> '		
+		+ '<option value="css/red.css">'+intext('Red')+'</option> '					
+		+ '<option value="css/blue.css">'+intext('Blue')+'</option> '			
+		+ '<option value="css/green.css">'+intext('Green')+'</option> '			
 		+ '</select> </form><input class="rtbutton" type="button" onClick="javascript:save_theme()" name="savetheme" value="'+intext('Save')+'">'
 		
 		+ '<br><br><h3>'+intext('Change password')+':</h3>'
@@ -3767,15 +3822,15 @@ function update_message_center(in_string) {
 	
 	if (globals.is_connected == false) {
 		if (globals.narrow_width) {
-	      $('message_center').innerHTML = intext("NEW")+": "+intext("WARNING: You appear to be not connected")+" " + display_string;
+	      $('message_center').innerHTML = intext("Threads")+": "+intext("WARNING: You appear to be not connected")+" " + display_string;
 	    } else {
-	      $('message_center').innerHTML = intext("NEW")+":<br><br>"+intext("WARNING: You appear to be not connected")+"<br><br>" + display_string;
+	      $('message_center').innerHTML = intext("Threads")+":<br><br>"+intext("WARNING: You appear to be not connected")+"<br><br>" + display_string;
 	    }
 	} else {
 		if (globals.narrow_width) {
-		   $('message_center').innerHTML = intext("NEW")+": " + display_string;
+		   $('message_center').innerHTML = intext("Threads")+": " + display_string;
 		} else {	
-		   $('message_center').innerHTML = intext("NEW")+": <br>" + display_string;
+		   $('message_center').innerHTML = intext("Threads")+": <br>" + display_string;
 		}
     }
 }
@@ -3881,10 +3936,7 @@ function append_to_thread(in_string){
 } 
 
 function process_signals(in_string) {
-
    signal = parseInt(in_string);
-   
-   if (signal == 0) {return;}
 
    if (signal & 4) {
       get_thread_page(globals.thread_watching,globals.current_page_of_thread,0,0);
@@ -3901,18 +3953,21 @@ function process_events(in_string) {
 	if (globals.narrow_width) {extra = "&nbsp;&nbsp;&nbsp;"} else {extra = "<br>";}
 	
 	for (var i = 0; i < total_events; i++) {
-	    offset = 1 + i;
-		
-		display_string += "<a onclick=\"javascript:show_event("+ temp_array[offset]+ ")\">&#9679 " + "post approval #"+temp_array[offset] + "</a>"+extra;  
+	    offset = 1 + (i * 2);
+		if (temp_array[offset] == 'gift') {
+		   display_string += "<a onclick=\"javascript:show_event(" +temp_array[offset+1]+ ")\">&#9679 " + intext("gift approval")+" #"+temp_array[offset+1] + "</a>"+extra;  
+        } else {
+		   display_string += "<a onclick=\"javascript:show_event(" +temp_array[offset+1]+ ")\">&#9679 " + intext("post approval")+" #"+temp_array[offset+1] + "</a>"+extra;  
+		}
     }
 	
 	if (display_string != "") {
 		other_content = $('message_center').innerHTML;
 
 		if (globals.narrow_width) {
-			$('message_center').innerHTML = other_content + "<br><br>" + intext("MOD")+": " + display_string;
+			$('message_center').innerHTML = other_content + "&nbsp;&nbsp;&nbsp;" +intext("Events")+": " + display_string;
 		} else {	
-			$('message_center').innerHTML = other_content + "<br><br>" + intext("MOD")+": <br>" + display_string;
+			$('message_center').innerHTML = other_content + "<br><br>"+intext("Events")+":<br>" + display_string;
 		}
 	}
 }
@@ -3922,7 +3977,7 @@ function show_event(event_id) {
 	set_class();
 	hide_footer();
 	
-	$('content_area').innerHTML = '<div style="width:100%;max-width:1250px;padding-top:10%;font-size:22px;font-weight:bold;color:#bbb;text-align:center;"><img border="0" src="img/indicator.gif"> </div>';
+	$('content_area').innerHTML = '<div style="padding-top:10%;text-align:center;"><img border="0" src="img/indicator.gif"> </div>';
 	var pars = 'event_id='+event_id;
 	var myAjax = new Ajax.Request("show_event.php", {method: 'post', parameters: pars, onComplete: show_event_response}); 
 }
@@ -3932,25 +3987,30 @@ function show_event_response(originalRequest) {
 	var temp_array = temp_string.split("^?");
 
 	if (error_code(temp_array)) {
-	   $('content_area').setAttribute("style","display:block;max-width:1000px;");
+	   $('content_area').setAttribute("style","display:block;");
 	   $('content_area').innerHTML = temp_array[1];
-	}  
-	
+	}
+
 	var event_id = parseInt(temp_array[1]);
 	var type = temp_array[2];
 	var user_id = parseInt(temp_array[3]);
 	var username = temp_array[4];
-	var thread_id = parseInt(temp_array[5]);
-	var thread_title = temp_array[6];
-	var content = temp_array[7];
-	var date = temp_array[8];
-    var newcontent = temp_array[9];
-	var forum_id = temp_array[10];
-	var forum_title = temp_array[11];
-		 
-	var locationfield = '<a onclick="javascript:get_thread_page('+thread_id+',0,0,0)">'+thread_title+'</a>';
-    var userfield = '<a href="profile.php?user_id='+ user_id +'" id="profile_box">' + username + '</a>'; 
-   
+	var userfield = '<a href="profile.php?user_id='+ user_id +'" id="profile_box">' + username + '</a>'; 
+	
+	if (type == 'gift') {
+	    var name = temp_array[5];
+		var msg = temp_array[6];
+	} else {
+		var thread_id = parseInt(temp_array[5]);
+		var thread_title = temp_array[6];
+		var content = temp_array[7];
+		var date = temp_array[8];
+		var newcontent = temp_array[9];
+		var forum_id = temp_array[10];
+		var forum_title = temp_array[11];
+		var locationfield = '<a onclick="javascript:get_thread_page('+thread_id+',0,0,0)">'+thread_title+'</a>';
+    }
+	
     if (type == "post") {
 		var file_attachments = '';
 		var tmp_result = content.match(/&lt;&lt;&lt;FILE:(.*?)&gt;&gt;&gt;/g);
@@ -3968,7 +4028,7 @@ function show_event_response(originalRequest) {
 		   + " " + userfield + "<br>"+intext("Thread")+": " + locationfield + "<br>"+intext("Content")+":" + content + file_attachments + "<br><br>"
 		   + '<input class="rtbutton" type="button" onClick="javascript:approve_event('+event_id+')" value="'+intext('Approve')+'">'
 		   + ' <input class="rtbutton" type="button" onClick="javascript:disapprove_event('+event_id+')" value="'+intext('Disapprove')+'">'
-   } else if (type == "editpost" || type == "editwiki") {
+    } else if (type == "editpost" || type == "editwiki") {
   		var file_attachments = '';
 		var tmp_result = content.match(/&lt;&lt;&lt;FILE:(.*?)&gt;&gt;&gt;/g);
 		if (tmp_result) {
@@ -4002,7 +4062,7 @@ function show_event_response(originalRequest) {
 		   + "<b>"+intext("New revision")+":</b> " + newcontent + newfile_attachments + "<br>" 
 		   + '<input class="rtbutton" type="button" onClick="javascript:approve_event('+event_id+')" value="'+intext('Approve')+'">'
 		   + ' <input class="rtbutton" type="button" onClick="javascript:disapprove_event('+event_id+')" value="'+intext('Disapprove')+'">'
-   } else if (type == "thread") {
+    } else if (type == "thread") {
 		var file_attachments = '';
 		var tmp_result = content.match(/&lt;&lt;&lt;FILE:(.*?)&gt;&gt;&gt;/g);
 		if (tmp_result) {
@@ -4015,14 +4075,19 @@ function show_event_response(originalRequest) {
 			content = content.replace(/(&lt;&lt;&lt;FILE:.*?&gt;&gt;&gt;)/g,'<span style="display:none;">$1</span>');
 		}      
    
-	   display_string = intext("The following thread needs moderator approval")+":<br>event_id: " + event_id + "<br>"+intext("Date")+": " + date + "<br>"+intext("Poster")+":" 
+	    display_string = intext("The following thread needs moderator approval")+":<br>event_id: " + event_id + "<br>"+intext("Date")+": " + date + "<br>"+intext("Poster")+":" 
 		   + " " + userfield + "<br>"+intext("Forum")+": " + forum_title + "<br>"+intext("Thread title")+" :" +thread_title+ "<br>"+intext("Content")+":<br>" + content + file_attachments + "<br><br>"
 		   + '<input class="rtbutton" type="button" onClick="javascript:approve_event('+event_id+')" value="'+intext('Approve')+'">'
 		   + ' <input class="rtbutton" type="button" onClick="javascript:disapprove_event('+event_id+')" value="'+intext('Disapprove')+'">'
-	}	   
+    } else if (type == "gift") {
+	    if (msg) {var extra = "<br>Message: "+msg;} else {var extra = "";}
+		display_string = 'You have received a gift from: '+userfield+'<br><img src="file.php?gift='+name+'" title="'+name+'" height=60 width=60>' + extra
+		   + '<br><input class="rtbutton" type="button" onClick="javascript:approve_event('+event_id+')" value="'+intext('Accept gift')+'">'
+		   + ' <input class="rtbutton" type="button" onClick="javascript:disapprove_event('+event_id+')" value="'+intext('Decline gift')+'">';
+    }
 
-   $('content_area').setAttribute("style","display:block;max-width:1000px;");
-   $('content_area').innerHTML = display_string
+	$('content_area').setAttribute("style","display:block;");
+	$('content_area').innerHTML = display_string
    
    	jQuery().ready(function() {
 		jQuery("#profile_box").fancybox({
@@ -4123,13 +4188,13 @@ function load_profile_page(user_id) {
 
 function profile_page_response(originalRequest)	{
     var part1, part2, part3, part4, part5, part6, mod_stuff, temp_img_src, status_text, send_message_button;
-	
+
     var temp_string = originalRequest.responseText;
     var temp_array = temp_string.split("^?");
 
 	set_theme(window.parent.account_info.theme);	
 
-	if (error_code(temp_array)) {$('profile_title').innerHTML = temp_array[1]; return;}
+	if (error_code(temp_array)) {$('profile_top').innerHTML = temp_array[1]; return;}
 	var username = temp_array[1];
 	var user_id = parseInt(temp_array[3]);
 	var profile_text = temp_array[5];
@@ -4143,8 +4208,12 @@ function profile_page_response(originalRequest)	{
 	var last_online = temp_array[13];
 	var fb_profile = temp_array[14];
     var li_profile = temp_array[15];
+	var total_gifts = parseInt(temp_array[16]);
+	var gift_count = parseInt(temp_array[17]);
+	var more_gifts = parseInt(temp_array[18]);
 	
 	if (window.parent.account_info.status > 2) {
+	   extraspace = "";
 	   if (is_banned == 2) {
 	      part1 = '<a onclick="javascript:window.parent.unban('+user_id+',0,0)">'+intext('Unban User')+'</a>';	  
 	   }   
@@ -4178,12 +4247,13 @@ function profile_page_response(originalRequest)	{
 	   }
 	   part5 = '<br><a onclick="javascript:change_username_input2('+user_id+')">'+intext('Change Username')+'</a><span id="changebox"></span>'; 
 	   if (last_ip) {
-	   	   mod_stuff = "<td class='colmod'> <span class='profile_title'><br></span>"+intext('ip address')+": " +last_ip+ "<br>"  + part1 + part2 + part3 + part4 + part5 +"</td>";
+	   	   mod_stuff = "<td class='colprofile' style='width:180px;'> <span class='profile_title'><br></span>"+intext('ip address')+": " +last_ip+ "<br>"  + part1 + part2 + part3 + part4 + part5 +"</td>";
 	   } else {
-	   	   mod_stuff = "<td class='colmod'> <span class='profile_title'><br></span>" + part1 + part2 + part3 + part4 + part5 +"</td>";
+	   	   mod_stuff = "<td class='colprofile' style='width:180px;'> <span class='profile_title'><br></span>" + part1 + part2 + part3 + part4 + part5 +"</td>";
 	   }
     } else {
 	   mod_stuff = "";
+	   extraspace = "<td class='colprofile' style='width:170px;'></td>";
 	}
 
     if (status == -1) {status_text = "&nbsp;&nbsp;&nbsp;"+intext("Status: System");}
@@ -4228,33 +4298,214 @@ function profile_page_response(originalRequest)	{
 	   part6 = "";
 	}
 
+	if (total_gifts) {
+		var extra = "";
+		var extra2 = "";
+
+        globals.gift_scroll_position = 0;		
+		var x = total_gifts
+		
+		if (total_gifts > 4) {
+		   extra = " (" +total_gifts +" in total)";
+		   extra2 = '<br><div id="giftscroll" class="scroll"><font size="+1"><a onclick="javascript:gift_scroll('+user_id+',1)">&#9660;</a> &#9650;</font></div>';
+		   x = 4;
+		}
+		
+		var gifts = "<td class='colprofile' style='width:260px;text-align:right;display: table-cell; text-align: left; vertical-align: top;'>"
+		+ "<div id='gifttext' class='gifttext'></div><div id='gifttotal'>Gifts:"+extra+"</div>"
+		+ "<div id='giftarea'>";
+
+		for (var i = 0; i < x; i++){
+		   offset= 19 + (i * 4);
+		   
+		   if (temp_array[offset+1]) {
+		      var msg = 'From ' + temp_array[offset] + ": " + temp_array[offset+1];
+		   } else {
+		      var msg = 'From ' + temp_array[offset];
+		   }
+
+		   if (window.parent.account_info.user_id == user_id) {
+			   gifts += '<span style="float:left;" id=sddm><a onmouseover="javascript:show_gift_msg(\''+msg+'\')" onclick="javascript:mopen(\'gift'+i+'\');" onmouseout="hide_gift_msg();mclosetime();">'
+					+ '<img class="giftimg" src="file.php?gift='+temp_array[offset+2]+'" width="60" height="60"></a>'
+					+ '<span id="gift'+i+'" style="right:'+(135-(i*60))+'px;top:140px;" onmouseover="mcancelclosetime()" onmouseout="mclosetime()">'
+					+ '<a onclick="javascript:bump_gift('+temp_array[offset+3]+')">'+intext('Bump position')+'</a>'
+					+ '<a onclick="javascript:delete_gift('+temp_array[offset+3]+')">'+intext('Delete')+'</a>'
+					+ '</span></span>';		   
+			} else {
+			   gifts += '<span style="float:left;" id=sddm><a onmouseover="javascript:show_gift_msg(\''+msg+'\')" onmouseout="hide_gift_msg();">'
+					+ '<img class="giftimg" src="file.php?gift='+temp_array[offset+2]+'" width="60" height="60"></a>'
+					+ '</span>';		
+            }			
+		} 
+
+		gifts += '</div>'+extra2 +'</td>';
+	}
+
+	if ((window.parent.globals.is_connected) && (window.parent.account_info.credits != 0) && (window.parent.account_info.user_id != user_id)) {
+	   send_gift_button = '<br><input type="button" onClick="javascript:gift_list()" style="position:fixed;right:180px;bottom:40px;" class="rtbutton" name="sumbit" value="'+intext('Send Gift')+'">'
+	} else {
+	   send_gift_button = "";
+	}
+
 	if (status == -1) {
-		$('profile_title').innerHTML = "<table border=0><tr><td><img src='"+settings.system_avatar+"'></td>" + 
+		$('profile_top').innerHTML = "<table border=0><tr><td><img src='"+settings.system_avatar+"'></td>" + 
 		"<td class='colmod'>&nbsp;<span class='profile_title'>"+username+"</span><br>&nbsp;&nbsp;&nbsp;"+intext("user id")+": "+user_id+"<br>"+
 		status_text+"<br>&nbsp;&nbsp;&nbsp;"+"</tr></table>";
 	} else {
-		$('profile_title').innerHTML = "<table border=0><tr><td>"+temp_img_src+"</td><td class='colmod'>&nbsp;<span class='profile_title'>"+username+"</span>"
+		$('profile_top').innerHTML = "<table border=0><tr><td>"+temp_img_src+"</td><td class='colmod'>&nbsp;<span class='profile_title'>"+username+"</span>"
 		+"<br>&nbsp;&nbsp;&nbsp;"+intext("user id")+": "+user_id+part6+"<br>&nbsp;&nbsp;&nbsp;"+intext("date joined")+": "+join_date+"<br>&nbsp;&nbsp;&nbsp;"+intext("number of posts")+": "+num_posts+"<br>"
-		+status_text+"<br>&nbsp;&nbsp;&nbsp;"+intext("Last online: ")+"<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+last_online+"</td> "+mod_stuff+"</tr></table>";
+		+status_text+"<br>&nbsp;&nbsp;&nbsp;"+intext("Last online: ")+"<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+last_online+"</td> "+ mod_stuff + extraspace + gifts +"</tr></table>";
 	}
 
-	if (settings.enable_private_threads && status != -1) {
-	   send_message_button = '<br><input type="button" onClick="javascript:window.parent.send_user_message(\''+username.replace(/'/g,"\\'") +'\')" name="sumbit" value="'+intext('Send Message')+'">'
+	if (settings.enable_private_threads && status != -1 && window.parent.globals.is_connected) {
+	   send_message_button = '<br><input type="button" onClick="javascript:window.parent.send_user_message(\''+username.replace(/'/g,"\\'") +'\')" style="position:fixed;right:60px;bottom:40px;" class="rtbutton" name="sumbit" value="'+intext('Send Message')+'">'
 	} else {
 	   send_message_button = '';
 	}
 
-    $('inner_profile_content').innerHTML = '<div class="profiletext">' + profile_text + '</div>' + send_message_button;
+    globals.temp_number = user_id;
+
+    $('inner_profile_content').innerHTML = '<div class="profiletext">' + profile_text + '</div>' + send_gift_button + send_message_button;
 }
 
-function load_ban_page(ip_address) {
-	if (window.parent.account_info.status > 4) {
-		$('profile_title').innerHTML = 	"<table border=0><tr>" + 
-		"<td class='colmod'>&nbsp;<span class='profile_title'>"+intext("Ban ID")+": "+ip_address+'</span><br><br><a onclick="javascript:window.parent.unbanwiped(\''+ip_address+'\')">'+intext('Unban this entry')+'</a>'+"</td></tr></table>";
-	} else {
-		$('profile_title').innerHTML = 	"<table border=0><tr>" + 
-		"<td class='colmod'>&nbsp;<span class='profile_title'>"+intext("Ban ID")+": "+ip_address+"</span>";
+function gift_list() {
+   $('profile_content').innerHTML = '<div style="text-align:center;"><img src="img/indicator.gif"></div>';
+   var myAjax = new Ajax.Request("get_gift_list.php", {method: 'get', parameters: '', onComplete: get_gift_list_response});     
+}
+
+function get_gift_list_response(originalRequest) {
+    var temp_string = originalRequest.responseText;
+    var temp_array = temp_string.split("^?");
+	
+	if (error_code(temp_array)) {alert(temp_array[1]); return;}   
+
+	string = '<div class="profile_title">'+intext('Select Gift')+' &nbsp;&nbsp; <input type="button" onClick="javascript:window.location.reload();" class="rtbutton" name="sumbit" value="'+intext('Cancel')+'"></div>'
+	+ "<span style='position:relative;left:600px;'>"+intext("credits")+": "+window.parent.account_info.credits+"</span>"
+	+ '<div style="white-space:nowrap;width:700px;overflow:auto;">';
+	
+	var count = parseInt(temp_array[1]);
+	
+	for (var i = 0; i < count; i++) {
+	   string += " <a onclick='javascript:highlight_gift("+i+",\""+temp_array[i+2]+"\")'><img title="+temp_array[i+2]+" width=60 height=60 src='file.php?gift="+temp_array[i+2]+"'></a>";
+	   if ((i+1 % 10) == 0) {string += '<br>';}
 	}
+
+	$('profile_content').setAttribute("style","height:400px;");
+	$("profile_content").innerHTML = string + '</div><div id="inner_profile_content">';
+}
+
+function highlight_gift(pos,name){
+   $("inner_profile_content").innerHTML = '<br>'+intext('Selected')+': <img width=60 height=60 title='+name+' src=file.php?gift='+name+'> '+intext('Optional message')+': <input type="text" id="gift_message" maxlength="'+settings.max_gift_msg_length+'" style="width: 300px" class="theinputbox">'
+   + '<br><br><br><input type="button" onClick="javascript:send_gift(\''+name+'\')" class="postbutton" name="sumbit" value="'+intext('Send Gift')+'">'
+}
+
+function send_gift(name) {
+   var pars = 'user_id=' + globals.temp_number  + '&name=' + name + '&msg=' + encodeURIComponent($("gift_message").value);
+   var myAjax = new Ajax.Request("send_gift.php", {method: 'get', parameters: pars, onComplete: send_gift_response});     
+}
+
+function send_gift_response(originalRequest) {
+    var temp_string = originalRequest.responseText;
+    var temp_array = temp_string.split("^?");
+	
+	alert(temp_array[1]);
+	if (window.parent.account_info.credits != 'unlimited') {
+       window.parent.account_info.credits--;
+	}
+	window.location.reload();
+}
+
+function gift_scroll(user_id,page) {
+   var pars = 'user_id=' + user_id + '&page=' + page;
+   var myAjax = new Ajax.Request("gift_scroll.php", {method: 'get', parameters: pars, onComplete: gift_scroll_response});     
+}
+
+function gift_scroll_response(originalRequest) {
+    var temp_string = originalRequest.responseText;
+    var temp_array = temp_string.split("^?");
+
+	if (error_code(temp_array)) {document.getElementById('giftarea').innerHTML = temp_array[1]; return;}   
+
+	var page = parseInt(temp_array[1]);
+	var total = parseInt(temp_array[2]);
+	var more = parseInt(temp_array[3]);   
+    var user_id = parseInt(temp_array[4]);   
+
+	var extra = "";
+	var extra2 = "";
+	globals.gift_scroll_position = 0;		
+	var giftsarea = "";
+
+	for (var i = 0; i < total; i++){
+		offset= 5 + (i * 4);
+		var msg = 'From '+temp_array[offset]+": "+temp_array[offset+1];
+
+		if (window.parent.account_info.user_id == user_id) {
+		   giftsarea += '<span style="float:left;" id=sddm><a onmouseover="javascript:show_gift_msg(\''+msg+'\')" onclick="javascript:mopen(\'gift'+i+'\');" onmouseout="hide_gift_msg();mclosetime();">'
+				+ '<img class="giftimg" src="file.php?gift='+temp_array[offset+2]+'" width="60" height="60"></a>'
+				+ '<span id="gift'+i+'" style="right:'+(135-(i*60))+'px;top:140px;" onmouseover="mcancelclosetime()" onmouseout="mclosetime()">'
+				+ '<a onclick="javascript:bump_gift('+temp_array[offset+3]+')">'+intext('Bump position')+'</a>'
+				+ '<a onclick="javascript:delete_gift('+temp_array[offset+3]+')">'+intext('Delete')+'</a>'
+				+ '</span></span>';		      
+		} else {
+			   giftsarea += '<span style="float:left;" id=sddm><a onmouseover="javascript:show_gift_msg(\''+msg+'\')" onmouseout="hide_gift_msg()">'
+					+ '<img class="giftimg" src="file.php?gift='+temp_array[offset+2]+'" width="60" height="60"></a>'
+					+ '</span>';		
+         }			
+	} 
+
+	$('giftarea').innerHTML = giftsarea 
+	
+    if (more && page) {
+       $('giftscroll').innerHTML = '<font size="+1"><a onclick="javascript:gift_scroll('+user_id+','+(page+1)+')">&#9660;</font></a> ' 
+	   + '<font size="+1"><a onclick="javascript:gift_scroll('+user_id+','+(page-1)+')">&#9650;</font></a>';
+    } else if (page) {
+       $('giftscroll').innerHTML = '<font size="+1">&#9660;<a onclick="javascript:gift_scroll('+user_id+','+(page-1)+')">&#9650;</font></a> ';
+	} else {
+       $('giftscroll').innerHTML = '<font size="+1"><a onclick="javascript:gift_scroll('+user_id+',1)">&#9660;</a> &#9650;</font>';
+    }	
+} 
+
+function bump_gift(gift_id){
+   var pars = 'gift_id=' + gift_id;
+   var myAjax = new Ajax.Request("bump_gift.php", {method: 'get', parameters: pars, onComplete: bump_gift_response});     
+}
+
+function bump_gift_response(originalRequest) {
+	var temp_string = originalRequest.responseText;
+	var temp_array = temp_string.split("^?");
+
+	if (error_code(temp_array)) {alert(temp_array[1]); return;}   
+
+	window.location.reload();
+}
+
+function delete_gift(gift_id){
+   var pars = 'gift_id=' + gift_id;
+   
+   var answer = confirm(intext("Are you sure you want to delete this gift?"));
+   if (answer) {
+      var myAjax = new Ajax.Request("delete_gift.php", {method: 'get', parameters: pars, onComplete: delete_gift_response}); 
+   }   
+}
+
+function delete_gift_response(originalRequest) {
+	var temp_string = originalRequest.responseText;
+	var temp_array = temp_string.split("^?");
+
+	if (error_code(temp_array)) {alert(temp_array[1]); return;}   
+
+	window.location.reload();
+}
+
+function show_gift_msg(string) {
+   $('gifttext').setAttribute("style","background:rgba(0,0,0,.8);"); 
+   $('gifttext').innerHTML = string;
+}
+
+function hide_gift_msg() {
+   $('gifttext').setAttribute("style","background:;"); 
+   $('gifttext').innerHTML = "";
 }
 
 function send_user_message(username) {

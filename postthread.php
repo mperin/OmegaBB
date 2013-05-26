@@ -1,9 +1,9 @@
 <?php
-/*OmegaBB*/
-header( 'Cache-control: no-cache' );
-header( 'Cache-control: no-store' );
-header( 'Pragma: no-cache' );
-header( 'Expires: 0' ); 
+	/*OmegaBB*/
+	header( 'Cache-control: no-cache' );
+	header( 'Cache-control: no-store' );
+	header( 'Pragma: no-cache' );
+	header( 'Expires: 0' ); 
 
     include("captcha/securimage.php");
     include('omegabb.php');

@@ -1,6 +1,6 @@
 <?php
 /* 
-OmegaBB developmental version - build 217  Copyright (c) 2013, Ryan Smiderle.  All rights reserved.
+OmegaBB developmental version - build 218 Copyright (c) 2013, Ryan Smiderle.  All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted
 provided that the following conditions are met:
@@ -26,11 +26,68 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 include_once('config.php');
 include_once('common.php');
 
+function SendGift($sender, $receiver, $giftname, $msg) {
+    global $settings;
+	
+	if (mb_strlen($msg) > $settings->max_gift_msg_length) {
+	   return "-1^?".intext("Message is too long, maximum size is")." ". $settings->max_gift_msg_length . " ".intext("characters").".";
+	}
+	
+	if ($sender == $receiver) {
+	   return "-1^?error";
+	}
+	
+	$row = perform_query("select credits,status from user where user_id=".$sender,SELECT);
+	
+	if ($row->status < $settings->unlimited_credits) {
+	   if ($row->credits == 0) {
+	      return "-1^?".intext("Not enough credits");
+	   } else {
+	      perform_query("update user set credits=credits-1 where user_id=".$sender,UPDATE);
+	   }
+	}
+	
+	perform_query("insert queue "
+	. "\n set "
+	. "\n  type='gift',"
+	. "\n  date=now(),"
+	. "\n  sender='" . $sender . "',"
+	. "\n  receiver='" . $receiver . "',"
+	. "\n  data='" . $giftname . "',"						
+	. "\n  data2='" . $msg . "'", INSERT);
+	
+	return "1^?Gift sent";
+}
+ 
+function GetGiftList() {
+	if ($handle = opendir('gifts')) {
+		while ($file = readdir($handle)) {
+			if ($file != "." && $file != "..") {
+	            if ($file == "Thumbs.db") {continue;}
+				$files[] = $file;
+				$count++;
+			}
+		}
+		closedir($handle);
+	}
+
+	sort($files);
+
+	foreach ($files as $f) {
+	   $output .= "^?" . $f;  
+	}	
+	return "1^?$count" . $output;
+}
+
 function ApproveEvent($event_id) {
 	$row = perform_query("select * from queue where event_id=$event_id",SELECT);
-	$row2 = perform_query("select * from thread where thread_id=".$row->thread_id,SELECT);
-	$row3 = perform_query("select * from post where message_id=".$row->post_id,SELECT);
-
+	
+	if ($row->type != 'gift') {
+	   if (!IsMod(Check_Auth())) {return "-1^?not a moderator";}
+	   $row2 = perform_query("select * from thread where thread_id=".$row->thread_id,SELECT);
+	   $row3 = perform_query("select * from post where message_id=".$row->post_id,SELECT);
+    }
+	
 	if ($row->type == 'post') {
 		perform_query("update post set needs_approval=0 where message_id = ".$row->post_id,UPDATE);
 
@@ -49,17 +106,34 @@ function ApproveEvent($event_id) {
 		   perform_query("update thread set thread_id=". ($row4->thread_id + 1) . " where thread_id =".$row->thread_id,UPDATE);
 		   perform_query("update post set thread_id=". ($row4->thread_id + 1) . " where thread_id =".$row->thread_id,UPDATE);
 		}
+	}  else if ($row->type == 'gift') {
+	    $row2 = perform_query("SELECT count( * ) as total_record FROM gift where receiver=".$row->receiver,SELECT);
+		for ($i = $row2->total_record - 1; $i >= 0; $i--) {
+            perform_query("update gift set displayorder=displayorder+1 where displayorder = $i and receiver=".$row->receiver,UPDATE);
+        }		
+		perform_query("insert gift "
+			. "\n set "
+			. "\n sender='" . $row->sender . "',"
+			. "\n receiver = '" . $row->receiver . "',"
+			. "\n displayorder = '0',"
+			. "\n gift='" . $row->data . "',"
+			. "\n message='" . mysql_real_escape_string($row->data2) . "'", INSERT);
 	}
 	perform_query("delete from queue where event_id='$event_id'",DELETE);
 			
-	return "1^?".intext("Post approved");
+	return "1^?".$row->type." ".intext("approved");
 }
 
 function DisapproveEvent($event_id) {
-	$row = perform_query("select * from queue where event_id=$event_id",SELECT);
-	$row2 = perform_query("select username from user where user_id=".$row->sender,SELECT);
+    global $settings;
 	
-	LogEvent(1,intext("Rejected posting made by") . " %%u" . $row->sender . ":" . $row2->username . ";");
+	$row = perform_query("select * from queue where event_id=$event_id",SELECT);
+	$row2 = perform_query("select status, username from user where user_id=".$row->sender,SELECT);
+	
+	if ($row->type != 'gift') {
+	   if (!IsMod(Check_Auth())) {return "-1^?not a moderator";}
+	   LogEvent(1,intext("Rejected posting made by") . " %%u" . $row->sender . ":" . $row2->username . ";");
+	}
 	
 	perform_query("delete from queue where event_id='$event_id'",DELETE);
 	
@@ -88,24 +162,35 @@ function DisapproveEvent($event_id) {
 			}
 		}
 		perform_query("update file set is_deleted=2 where post_id=". $row->post_id,UPDATE);    
+	} else if ($row->type == 'gift') {
+		if ($row2->status < $settings->unlimited_credits) {
+	       perform_query("update user set credits=credits+1 where user_id=".$row->sender,UPDATE);
+		}
+		return "1^?".intext("Gift declined");
 	}
 
-    return "1^?post rejected";
+    return "1^?".$row->type." ".intext("rejected");
 }
 
-function ShowEvent($event_id) { 
+function ShowEvent($user_id,$event_id) { 
+//sercurity check
+
     global $settings;
     $row = perform_query("select * from queue where event_id=$event_id",SELECT);
-	$row2 = perform_query("select * from post where message_id=".$row->post_id,SELECT);
-    $row3 = perform_query("select username from user where user_id=".$row->sender,SELECT);
-	$row4 = perform_query("select title from thread where thread_id=".$row->thread_id,SELECT);
-		
+	$row3 = perform_query("select username from user where user_id=".$row->sender,SELECT);
+
+	if ($row->type != 'gift') {
+		$row2 = perform_query("select * from post where message_id=".$row->post_id,SELECT);
+		$row4 = perform_query("select title from thread where thread_id=".$row->thread_id,SELECT);
+	}
     if ($row->type == 'post') {
 	    $return_string = "1^?" . $event_id . "^?" . $row->type . "^?" . $row->sender  . "^?" . $row3->username . "^?" . $row->thread_id . "^?" . $row4->title . "^?" . $row2->message . "^?" . $row2->tstamp;
 	} else if ($row->type  == 'editpost' || $row->type  == 'editwiki') {	
 	    $return_string = "1^?" . $event_id . "^?" . $row->type . "^?" . $row->sender  . "^?" . $row3->username . "^?" . $row->thread_id . "^?" . $row4->title . "^?" . $row2->message . "^?" . $row2->tstamp . "^?" . $row->data . "^?";
 	} else if ($row->type == 'thread') {		
 	    $return_string = "1^?" . $event_id . "^?" . $row->type . "^?" . $row->sender  . "^?" . $row3->username . "^?" . $row->thread_id . "^?" . $row4->title . "^?" . $row2->message . "^?" . $row2->tstamp . "^?^?" . $row->forum_id . "^?" . $settings->forum_topic_names[$row->forum_id - 1];
+	} else if ($row->type == 'gift') {		
+	    $return_string = "1^?" . $event_id . "^?" . $row->type . "^?" . $row->sender  . "^?" . $row3->username . "^?" . $row->data . "^?" . $row->data2;
 	}
 
 	return $return_string;
@@ -304,6 +389,7 @@ function SaveSiteSettings() {
     "name_of_status_2" => "string",	
     "avatars_same_size" => "bool",	
 	"max_avatar_dimensions" => "int-array,2,0-x",
+	"max_gift_dimensions" => "int-array,2,0-x",
     "narrow_width" => "int,0-x",			
 	"default_avatar" => "string",	
 	"system_avatar" => "string",	
@@ -403,7 +489,17 @@ function SaveSiteSettings() {
 	"helpmenu6_location" => "string",
 	"helpmenu6_is_div" => "bool",
 	"helpmenu6_indexable" => "bool",
-	"post_approval" => "bool"
+	"post_approval" => "bool",
+	"gifts_enabled" => "bool",
+	"allowance" => "bool",
+	"bonus" => "bool",	
+	"allowance_status" => "int,x-x",
+	"allowance_credits" => "int,0-x",
+	"bonus_status" => "int,x-x",
+	"bonus_credits" => "int,0-x",
+	"max_credits" => "int,0-x",
+	"unlimited_credits" => "int,0-x",
+	"can_deliver_credits" => "int,0-x"
 	);		
 
 	if (count($_POST) == 0) {return "-1^?".intext("No settings changed");}
@@ -737,7 +833,7 @@ function LinkedInNewUser ($user_data,$user_connections) {
 		. "\n  linkedin_link='$li_profile_url',"		
 		. "\n  my_threads='$threads',"    		
 		. "\n  join_date=now(),"
-		. "\n  prune_time=now(),"		
+		. "\n  prune_time=now(),"	
 		. "\n  settings=0,"		
 		. "\n  first_ip='" . $_SERVER['REMOTE_ADDR'] . "'";
    
@@ -1101,7 +1197,7 @@ function housecleaning() {
 		. "\n state = 3 and no_auto_close = 0", UPDATE); 		
 	}
 	
-    //updating user's information (about every 2 weeks)
+    //updating user's information (about every week)
 	$user_id = Check_Auth();
 	$row = perform_query("select * from user where user_id=" . $user_id . " and prune_time < DATE_SUB(now(),INTERVAL 14 DAY)", SELECT);
 	
@@ -1115,7 +1211,7 @@ function housecleaning() {
 			   $my_threads_hash[$ta[0]] = $ta[1];
 			}
 
-			$query = "select thread_id from thread where ( (forum_id != 13 and (state = 1 || state = 2 || state = 4) ) or (forum_id = 13 and state = 2) ) and (tstamp < DATE_SUB(now(),INTERVAL 7 DAY)) and (tstamp > '".$row->prune_time."')";
+			$query = "select thread_id from thread where ((forum_id != 13 and (state = 1 || state = 2 || state = 4) ) or (forum_id = 13 and state = 2) ) and (tstamp < DATE_SUB(now(),INTERVAL 7 DAY)) and (tstamp > '".$row->prune_time."')";
 			$cur3 = perform_query($query, MULTISELECT);
 
 			while ($row2 = mysql_fetch_array( $cur3 )) {
@@ -1129,8 +1225,28 @@ function housecleaning() {
 				. "\n set "
 				. "\n my_threads='" . $temp_my_threads . "'"
 				. " where user_id='$user_id'",UPDATE); 	 
-		} 
-		  
+		}
+
+		//update gift credits
+ 	    if ($settings->gifts_enabled && $settings->allowance && ($settings->allowance_status <= $row->status)) {
+		   $row3 = perform_query("select * from user where user_id='$user_id' and credit_allowance_time < DATE_SUB(now(),INTERVAL 1 MONTH)",SELECT);
+		   if ($row3) {
+			   if (($settings->allowance_credits + $row->credits) > $settings->max_credits) {
+					perform_query("update user "
+						. "\n set "
+						. "\n credit_allowance_time=now(),"								
+						. "\n credits='" . $settings->max_credits . "'"
+						. " where user_id='$user_id'",UPDATE); 	 
+			   } else {
+					perform_query("update user "
+						. "\n set "
+						. "\n credit_allowance_time=now(),"					
+						. "\n credits=credits+'" . $settings->allowance_credits . "'"
+						. " where user_id='$user_id'",UPDATE); 	 
+			   }
+		   }
+		}
+
 		//update prune time
 		perform_query("update user "
 				. "\n set "
@@ -2472,7 +2588,7 @@ function UnwatchThread($thread_id) {
     	. "\n  my_threads='" . $updated_my_threads . "'"
         . " where  user_id='$userid'",UPDATE); 
 
-    return "1^?$ret_value";  
+    return "1^?$thread_id";  
 }
 
 function WatchThread($thread_id,$total_posts) {
@@ -2493,7 +2609,7 @@ function WatchThread($thread_id,$total_posts) {
     	. "\n  my_threads='" . $updated_my_threads . "'"
         . " where  user_id='$userid'",UPDATE); 
 
-    return "1^?$ret_value";  
+    return "1^?$thread_id^?$total_posts";  
 }
 
 function NewUsername($newusername, $user_id) {
@@ -2947,16 +3063,16 @@ function emote_check(&$theinput) {
 		    $j = preg_replace('/:/','',$i);		    
 		
 		    if (file_exists("emotes/" . $j . ".png")) {
-			   $theinput = preg_replace("#([^\"]|^)$i#",'${1}<img title="'.$i.'" alt="'.$i.'" src="emotes/' . $j . '.png">',$theinput,1); 
+			   $theinput = preg_replace("#([^\"]|^)$i#",'${1}<img title="'.$i.'" alt="'.$i.'" src="file.php?emote=' . $j . '.png">',$theinput,1); 
 		    }
 		    if (file_exists("emotes/" . $j . ".jpg")) {
-			   $theinput = preg_replace("#([^\"]|^)$i#",'${1}<img title="'.$i.'" alt="'.$i.'" src="emotes/' . $j . '.jpg">',$theinput,1); 
+			   $theinput = preg_replace("#([^\"]|^)$i#",'${1}<img title="'.$i.'" alt="'.$i.'" src="file.php?emote=' . $j . '.jpg">',$theinput,1); 
 		    }
 		    if (file_exists("emotes/" . $j . ".jpeg")) {
-			   $theinput = preg_replace("#([^\"]|^)$i#",'${1}<img title="'.$i.'" alt="'.$i.'" src="emotes/' . $j . '.jpeg">',$theinput,1); 
+			   $theinput = preg_replace("#([^\"]|^)$i#",'${1}<img title="'.$i.'" alt="'.$i.'" src="file.php?emote=' . $j . '.jpeg">',$theinput,1); 
 		    }		   
 		    if (file_exists("emotes/" . $j . ".gif")) {
-			  $theinput = preg_replace("#([^\"]|^)$i#",'${1}<img title="'.$i.'" alt="'.$i.'" src="emotes/' . $j . '.gif">',$theinput,1); 
+			  $theinput = preg_replace("#([^\"]|^)$i#",'${1}<img title="'.$i.'" alt="'.$i.'" src="file.php?emote=' . $j . '.gif">',$theinput,1); 
 		    }		   
 		 }
       }
@@ -3301,6 +3417,8 @@ function AddAvatar($user_id){
 }
 	
 function GetInfo($userinfo) {				   	
+	global $settings;
+	
 	if (is_numeric($userinfo)){	
 		$first_query = "SELECT * "
 			. "\nFROM user "
@@ -3320,8 +3438,11 @@ function GetInfo($userinfo) {
 	$current_avatar = $row->current_avatar;
 	$total_avatars = $row->total_avatars;
 	$my_threads = $row->my_threads;
+	$credits = $row->credits;
 	
-	return "1^?$username^?$user_id^?" .strtoupper($user_id_hex) . "^? ^?$status^?$theme^?$current_avatar^?$total_avatars^?$my_threads";
+	if ($status >= $settings->unlimited_credits) {$credits = "u";}
+	
+	return "1^?$username^?$user_id^?" .strtoupper($user_id_hex) . "^? ^?$status^?$theme^?$current_avatar^?$total_avatars^?$my_threads^?$credits";
 }    
 
 function GetState($user_id) {

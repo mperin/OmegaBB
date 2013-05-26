@@ -1,5 +1,5 @@
  <?php
-/*OmegaBB*/
+	/*OmegaBB*/
     include('config.php');
     include('common.php');
 	
@@ -9,7 +9,7 @@
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 
-<html style="overflow-y:auto;">
+<html style="overflow-y:hidden;">
 
 <head>
   <title>Profile</title>
@@ -23,7 +23,7 @@
   <script type="text/javascript" src="client_settings.php"></script>   
   <script type="text/javascript" src="js/prototype.js" ></script>
   <script type="text/javascript" src="js/omegabb.js" ></script>
-
+  
   <link rel="icon" href="img/favicon.ico" type="image/png"> 
 
 </head>
@@ -38,11 +38,14 @@ if (isset ($user_id)) {
 
 <div id="profile_content">
 
-  <div id="profile_title"><img src="img/indicator.gif"></div>  
+  <div id="profile_top"><div style="text-align:center;"><img src="img/indicator.gif"></div></div>  
   
-  <div id="inner_profile_content"></div>   
+  <div id="inner_profile_content"> 
+  
+  </div>   
 
 </div>
+
 
 </body>
 </html>

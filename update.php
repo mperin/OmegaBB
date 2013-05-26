@@ -73,12 +73,19 @@ function CheckEventQueue($user_id) {
 	$ret_value = "";
 	
 	if (IsMod($user_id)) {
-	   $cur = perform_query("select * from queue", MULTISELECT);
+	   $cur = perform_query("select * from queue where receiver=0", MULTISELECT);
 	   while ($row = mysql_fetch_array( $cur )) {  
 	       $count++;
-		   $ret_value .=  $row["event_id"] . "^?";
+		   $ret_value .=  $row["type"] . "^?" . $row["event_id"] . "^?";
 	   }
 	}
+	
+	$cur = perform_query("select * from queue where receiver=$user_id", MULTISELECT);
+	while ($row = mysql_fetch_array( $cur )) {  
+	   $count++;
+	   $ret_value .=  $row["type"] . "^?" . $row["event_id"] . "^?";
+	}
+	
 	return $count . "^?" . $ret_value;
 }
 

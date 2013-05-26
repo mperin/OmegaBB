@@ -5,16 +5,18 @@
 	header( 'Pragma: no-cache' );
 	header( 'Expires: 0' ); 
 
-    include('omegabb.php');
+    include('config.php');
+	include('common.php');
+	include('uncommon.php');
 	
-	$event_id=GetParam($_REQUEST,'event_id','');
+	$gift_id=GetParam($_REQUEST,'gift_id','');
 	
 	$auth_ret = Check_Auth();
-	
+
     if ($auth_ret <= 0) {
     	echo "-1^?".intext("Not signed in");
     	return;
     }   
 	
-    echo ShowEvent($auth_ret,$event_id);   
-?>
+    echo DeleteGift($auth_ret,$gift_id);   
+?> 

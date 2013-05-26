@@ -1,5 +1,5 @@
 <?php
-/*OmegaBB*/
+	/*OmegaBB*/
     include('config.php');
 	include('common.php');
 ?>
@@ -103,6 +103,7 @@ settings.helpmenu6_enabled = <?php echo var_export($settings->helpmenu6_enabled)
 settings.helpmenu6_name = "<?php echo $settings->helpmenu6_name?>";  	 
 settings.helpmenu6_location = "<?php echo $settings->helpmenu6_location?>";  	 
 settings.helpmenu6_is_div = <?php echo var_export($settings->helpmenu6_is_div)?>;  
+settings.max_gift_msg_length = <?php echo var_export($settings->max_gift_msg_length)?>;  
 settings.site_down = false; 
 settings.site_down_msg = ""; 
 

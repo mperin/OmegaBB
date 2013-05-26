@@ -118,22 +118,22 @@ $settings->emotes_allowed = true;  //If set, a user can enter ":lol:" and it'll 
 $settings->user_block_list = true;  //If set, a user may specify users that can never post in threads they start.  
 $settings->word_filter = true;  //If set, word filter is active, see word_filter.php for the list
 $settings->file_upload_allowed = true;  //If set, a user may upload a file attachment with their post.  
-$settings->file_upload_in_pt_allowed = false;  ///If set, a user may upload a file attachment with their post in a private thread.  
+$settings->file_upload_in_pt_allowed = true;  ///If set, a user may upload a file attachment with their post in a private thread.  
 $settings->allowed_file_types = array("txt","pdf","jpg","jpeg","png","gif");  //Allowed file types for upload
 $settings->thumbnail_uploaded_images = true;  //If set, attached images will be thumbnailed.  
 $settings->permalinks_enabled = true;  //If set, each public thread and article will have a permalink for easy retrieval, ex: "http://www.foo.com/thread.php?id=889".   
                                     //Must be enabled if bots_allowed is set. 
 $settings->new_accounts_allowed = true;  //If you don't want to allow new accounts to be made, set this to 0.  
 $settings->may_undelete = true;  //If set, a moderator may undelete soft-deleted posts or threads.  
-$settings->post_approval = false; //If set, new users (status = 0) will need to have their postings approved by a moderator
+$settings->post_approval = false; //If set, new users (status = 0) will need to have their postings approved by a moderator.  Note: does not apply to private threads
 
 //Permissions based on status level.  0: new user, 1: regular user, 2: star user, 3: moderator, 5: administrator.
 $settings->status_to_start_threads = 0;  //Users must have a status at least this high to start new threads.  
 $settings->status_to_create_articles = 0;  //Users must have a status at least this high to create articles.  
-$settings->status_to_upload_file = 1;  //Status needed to upload a file in your post.  
+$settings->status_to_upload_file = 0;  //Status needed to upload a file in your post.  
 $settings->status_to_embed = 0;  //Status needed to be able to post [IMG][/IMG] and [YOUTUBE][/YOUTUBE].  
 $settings->status_to_have_block_list = 1;  //Status needed to use block list.  
-$settings->status_to_start_pt = 0;  //Status needed to start a private thread.  Note: anyone can be invited to a private thread, this only determines who may start one.  
+$settings->status_to_start_pt = 1;  //Status needed to start a private thread.  Note: anyone can be invited to a private thread, this only determines who may start one.  
 $settings->status_to_have_avatar = 0;  //Minimum status needed to upload an avatar.  
 $settings->status_to_hard_delete = 5;  //Deletions of posts or threads from moderators with this status level will be permanent deletions.  Set to either 3 (all moderators), 5 (admin only) or 6 (everyone soft deletes).  
                                        //Soft deletions cause the post or thread to remain in the database until it's been pruned (assuming you have the system prune active).  Note: file attachments are always hard deleted.
@@ -151,7 +151,7 @@ $settings->user_info_permanentness = false;  //If set, when a user makes a posti
                                             //change it at a later time.  If set to 0, old postings will be updated if the user changes their name or avatar. 
 $settings->profile_text_limit = 600; //Maximum number of characters allowed in a user's profile.  Set to 0 to not allow text in user's profiles.
 
-//Privacy options
+//Privacy Settings
 $settings->must_login_to_see_forum = false;  //If set, forums and articles will not be visible unless you're logged in
 $settings->must_login_to_see_profile = false;  //Users must sign in to see a user's profile
 $settings->allow_hotlinking = true; //to prevent other sites from hotlinking uploaded content, set this to false
@@ -174,7 +174,18 @@ $settings->prune_closed_threads = -1; //Closed threads will be deleted from the 
 	                                  //Note: the system does this check once a week, so deletions won't happen exactly at the time specified									
 $settings->prune_old_pt = 0;  //Old pts will be deleted after this number of months of inactivity, set to 0 to never delete old PTs.
 
-//Miscellaneous options
+//Gifts settings
+$settings->gifts_enabled = true; //enable giving gifts to other users
+$settings->allowance = true;     //each gift costs one credit, users with at least $allowance_status status level will receive $allowance_credits per month
+$settings->allowance_status = 1;
+$settings->allowance_credits = 1;
+$settings->bonus = true;   //when a user's status is raised to $bonus_status, they'll immediately receive $bonus_credits credits
+$settings->bonus_status = 1;
+$settings->bonus_credits = 1;
+$settings->max_credits = 3; //maximum number of credits a user may hold
+$settings->unlimited_credits = 5; //users with at least this status level have an unlimited number of credits
+
+//Miscellaneous Settings
 $settings->name_of_status_2 = "Star Member";  //This is the name of the status with a rank above "regular user" (1) but below "moderator" (3).  
 $settings->new_account_limit = 1;  //This to the maximum number of accounts that can be created from one IP address.  If you don't want a limit, set it to -1
 $settings->default_avatar = "img/default.jpg";  //Image file of the logo that appears in the top left corner
@@ -199,12 +210,13 @@ $settings->img_url_whitelist = array();  //If set, urls from the domain names li
 $settings->img_url_blacklist = array();  //If set, urls from the domain names listed here will not turn into inline images using [IMG][/IMG].  Example: $settings->img_url_blacklist = array("flickr.com","tumblr.com"); 	
 $settings->datetime_format = "d-M-Y g:i a";  //Format of date and time, see http://php.net/manual/en/datetime.formats.date.php  There must always be a space after the date portion and no space before it.
 
-//number of characters allowed in forum titles, articles titles and pt titles.  You'll probably never have to change this
+//number of characters allowed in forum titles, articles titles and pt titles.  Since you're unlikely to ever need to change these settings they don't show up on the admin settings page.
 if ($settings->forums_per_tab == 1) {$settings->size_of_thread_title = 130;}
 else if ($settings->forums_per_tab == 2) {$settings->size_of_thread_title = 66;} 
 else if ($settings->forums_per_tab == 3) {$settings->size_of_thread_title = 45;} 
 else {$settings->size_of_thread_title = 34;}
 $settings->size_of_pt_title = 75;  	
 $settings->size_of_article_title = 130;
+$settings->max_gift_msg_length = 90;
 //€
 ?>

@@ -10,6 +10,7 @@
 
 	$count = 0;
     $output = ""; 
+	global $settings;
 	
 	if ($info = lockdown_button_check(SITEDOWN)) {
 	   $sysinfo = explode("^?",$info);
@@ -19,6 +20,16 @@
 	      echo "-1^?".intext("Feature disabled");
 	   }
 	   return;
+	}
+	
+	if ($settings->emotes_allowed == false || $settings->helpmenu5_enabled == false) {
+	   echo "-1^?".intext("Feature disabled");
+	   return;
+	}
+	
+	if ($settings->must_login_to_see_forum && (Check_Auth() <= 0)) {
+		echo "-1^?".intext("Must sign in to see forum and articles"); 
+		return;
 	}
 	
 	if ($handle = opendir('emotes')) {

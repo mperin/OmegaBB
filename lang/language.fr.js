@@ -1,26 +1,15 @@
 //OmegaBB
 
-language_hash["FAQ"] = "text her€";
-language_hash["Status"] = "text here";
-language_hash["Terms Of Service"] = "text here";
-language_hash["Contact"] = "text here";
-language_hash["Emotes"] = "text here";
-language_hash["About"] = "text here";
-language_hash["Main"] = "text here";
-language_hash["News"] = "text here";
-language_hash["Articles"] = "text here";
-language_hash["Archive"] = "text here";
-language_hash["invalid configuration, you may only have up to six forum tabs"] = "text here"
-language_hash["Make New Account"] = "text here";
+language_hash["Make New Account"] = "text her€";
 language_hash["Sign In"] = "text here";
 language_hash["Or"] = "text here";
-language_hash["Your browser does not support iframes."] = "text here";
 language_hash["New Account"] = "text here";
 language_hash["Enter the word you see:"] = "text here";
 language_hash["Refresh Image"] = "text here";
 language_hash["Register"] = "text here";
+language_hash["Your browser does not support iframes."] = "text here";
+language_hash["invalid configuration, you may only have up to six forum tabs"] = "text here"
 language_hash["Your status isn't high enough to start private threads"] = "text here";
-language_hash["Enter the word you see"] = "text here";
 language_hash["Only signed in users can post"] = "text here";
 language_hash["Attach File"] = "text here";
 language_hash["Your account status isn't high enough to post articles"] = "text here";
@@ -259,20 +248,31 @@ language_hash["Check for updates"] = "text here";
 language_hash["Software information"] = "text here";
 language_hash["System Log"] = "text here";
 language_hash["Event Log"] = "text here";
-language_hash["File attachments"] = "text_here";
-language_hash["The following post needs moderator approval"] = "text_here";
-language_hash["Date"] = "text_here";
-language_hash["Poster"] = "text_here";
-language_hash["Thread"] = "text_here";
-language_hash["Content"] = "text_here";
-language_hash["Approve"] = "text_here";
-language_hash["Disapprove"] = "text_here";
-language_hash["The following edit needs moderator approval"] = "text_here";
-language_hash["Old revision"] = "text_here";
-language_hash["New revision"] = "text_here";
-language_hash["The following thread needs moderator approval"] = "text_here";
-language_hash["Forum"] = "text_here"; 
-language_hash["Thread title"] = "text_here";
+language_hash["File attachments"] = "text here";
+language_hash["The following post needs moderator approval"] = "text here";
+language_hash["The following thread needs moderator approval"] = "text here";
+language_hash["The following edit needs moderator approval"] = "text here";
+language_hash["Date"] = "text here";
+language_hash["Poster"] = "text here";
+language_hash["Thread"] = "text here";
+language_hash["Content"] = "text here";
+language_hash["Approve"] = "text here";
+language_hash["Disapprove"] = "text here";
+language_hash["Old revision"] = "text here";
+language_hash["New revision"] = "text here";
+language_hash["Forum"] = "text here"; 
+language_hash["Thread title"] = "text here";
+language_hash["Bump position"] = "text here";
+language_hash["Send Gift"] = "text here";
+language_hash["Select Gift"] = "text here";
+language_hash["Cancel"] = "text here";
+language_hash["Send Gift"] = "text here";
+language_hash["Bump position"] = "text here";
+language_hash["Are you sure you want to delete this gift?"] = "text here";
+language_hash["gift approval"] = "text here";
+language_hash["post approval"] = "text here";
+language_hash["Events"] = "text here";			
+language_hash["Threads"] = "text here";
 
 //the remaining messages are only seen when viewing the site settings
 language_hash["Place your cursor over the variable name for more information"] = "text here";
@@ -369,10 +369,6 @@ language_hash["This is the option to cause old or inactive threads to automatica
 	+"the second number is number of days the thread has been inactive.  Examples: Close thread 20 days after creation = 20,0 "    
 	+"Close thread after 3 days of inactivity = 0,3  Close thread after 3 days of inactivity and at least 20 days after creation = 20,3 "
 	+"To never auto-close threads, set this to 0,0"] = "text here"; 
-language_hash["This is the option to cause old or inactive private threads to be automatically deleted.  The first number is the number of days after the private thread was created, "
-    + "the second number is number of days the private thread has been inactive.  Examples: Delete a private thread 20 days after creation = 20,0 "   
-    + "Delete a private thread after 3 days of inactivity = 0,3  Delete a private thread after 3 days of inactivity and at least 20 days after creation = 20,3 "
-    + "To never auto-delete private threads, set this to 0,0"] = "text here";
 language_hash["If set, threads that have been closed or deleted will be removed from a user's watchlist after at least a week"] = "text here";
 language_hash["If set, threads that have been set to state 'deleted' will be removed from the database after at least 2 weeks, along with all of its posts and file attachments"] = "text here";
 language_hash["If set, posts that have been set to state 'deleted' will be removed from the database after at least 2 weeks"] = "text here";
@@ -440,4 +436,17 @@ language_hash["Displays the contents in a div or in an iframe"] = "text here";
 language_hash["Content can be indexed by web search bots"] = "text here";
 language_hash["Topic title that appears directly above the articles"] = "text here";
 language_hash["Topic title that appears directly above the private threads"] = "text here";
-language_hash["If set, new users (status = 0) will need to have their postings approved by a moderator"] = "text_here";
+language_hash["If set, new users (status = 0) will need to have their postings approved by a moderator.  Note: does not apply to private threads"] = "text here";
+language_hash["Allows users to send each other gifts that appear on their profile page, each gift costs one credit.  See the directory ./gifts"] = "text here";
+language_hash["Users with a status level of at least"] = "text here";
+language_hash["receive"] = "text here";
+language_hash["credit(s) per month."] = "text here";
+language_hash["When a user's status is raised to"] = "text here";
+language_hash["they recieve"] = "text here";
+language_hash["credit(s)"] = "text here";
+language_hash["Maximum number of credits an user may hold"] = "text here";
+language_hash["Users with a status level of this or higher have an unlimited number of credits"] = "text here";	
+language_hash["credits"] = "text here";
+language_hash["unlimited"] = "text here";
+language_hash["Selected"] = "text here";
+language_hash["Optional message"] = "text here";

@@ -256,11 +256,11 @@ function IsBanned($user_id) {
 
 	$row = perform_query("select * from ban where user_id=".$user_id,SELECT);
 	if ($row) {
-		if ($row->type == "perm_ban") {$state = "You are banned";}
-		if ($row->type == "perm_mute") {$state = "You are muted";}
-		if ($row->type == "ban") {$state = "Your are banned until";}
-		if ($row->type == "mute") {$state = "Your are muted until";}
-		if ($row->type == "wiped") {$state = "New accounts not allowed";}
+		if ($row->type == "perm_ban") {$state = intext("You are banned");}
+		if ($row->type == "perm_mute") {$state = intext("You are muted");}
+		if ($row->type == "ban") {$state = intext("You are banned until");}
+		if ($row->type == "mute") {$state = intext("You are muted until");}
+		if ($row->type == "wiped") {$state = intext("New accounts not allowed");}
 		
 		if ($row->type == "ban" || $row->type == "mute") {
 			$d1 = time();
@@ -272,10 +272,10 @@ function IsBanned($user_id) {
 				$dtime = new DateTime($row->expires);
 				$dtime->setTimeZone(new DateTimeZone($settings->time_zone));
 				$timestamp = $dtime->format($settings->datetime_format);  
-				return intext("$state")." ". $timestamp;
+				return "$state"." ". $timestamp;
 			}
 		} else {
-			return intext("$state");
+			return "$state";
 		}
 	} else {
 		return 0;

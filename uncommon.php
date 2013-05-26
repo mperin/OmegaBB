@@ -308,6 +308,7 @@ function GetPage($page, $forum_id) {
 function GetPT($user_id) {
     global $settings;
 	$thread_count = 0;
+	$gift_count = 0;
 	
 	if (!$settings->enable_private_threads) {
 		return "-1^?".intext("Feature disabled");
@@ -431,9 +432,94 @@ function GetProfile($user_id) {
 	
 	$row3 = perform_query("select internal_id from file where author_id='". $user_id . "' and avatar_number=" . $current_avatar, SELECT); 
     if (($current_avatar > 0) && !file_exists("files/avatar_" . $user_id . "_" . $current_avatar . "_" . $row3->internal_id)) {$current_avatar = -1;}
+
 	
-	return "1^?$username^?$user_id^?" .strtoupper($user_id_hex) . "^?$num_posts^?$profile_text^?$current_avatar^?$join_date^?$num_posts^?$last_ip^?$status^?$is_banned^?$ban_expire_time^?$last_online^?$fb_link^?$li_link^?";	
+	$more = "0";
+	$row4 = perform_query("SELECT count( * ) as total_record FROM gift where receiver = ".$user_id,SELECT);
+	$total_gifts = $row4->total_record;
+	$gift_count = 0;
+
+	$cur = perform_query("select * from gift where receiver=".$user_id." ORDER BY displayorder ASC",MULTISELECT);
+	while ($row = mysql_fetch_array( $cur )) {
+	   if ($gift_count == 4) {$more = "1"; break;}
+	   $row2 = perform_query("select username from user where user_id=".$row["sender"],SELECT); 
+	   $gifts .= $row2->username  . "^?" . $row["message"]  . "^?" . $row["gift"] . "^?" . $row["gift_id"] . "^?";
+	   $gift_count++;
+	}
+	
+	return "1^?$username^?$user_id^?" .strtoupper($user_id_hex) . "^?$num_posts^?$profile_text^?$current_avatar^?$join_date^?$num_posts^?$last_ip^?$status^?$is_banned^?$ban_expire_time^?$last_online^?$fb_link^?$li_link^?$total_gifts^?$gift_count^?$more^?" . $gifts ;	
 }    
+
+function GiftScroll($user_id,$page) {
+    global $settings;
+	
+	if (lockdown_button_check(MUSTLOGIN) && (Check_Auth() <= 0)) {return "-1^?".intext("You must sign in to see the forums");}
+	if ($settings->must_login_to_see_forum && (Check_Auth() <= 0)) {return "-1^?".intext("You must sign in to see the forums");}
+    if ($settings->must_login_to_see_profile && (Check_Auth() <= 0)) {return "-1^?".intext("Must be signed in to see profiles");}
+	
+	$top_limit = ($page * 4) + 5;
+	$bottom_limit = ($page * 4);
+	$q = "SELECT * FROM gift WHERE receiver = $user_id AND displayorder >= $bottom_limit AND displayorder <= $top_limit ORDER BY displayorder ASC ";
+	$gift_count = 0;
+	$more = "0";
+	$cur = perform_query($q, MULTISELECT);
+	while ($row = mysql_fetch_array( $cur )) {
+	   if ($gift_count == 4) {$more = "1"; break;}
+	   $row2 = perform_query("select username from user where user_id=".$row["sender"],SELECT); 
+       $ret_val .= $row2->username  . "^?" . $row["message"]  . "^?" . $row["gift"] . "^?" . $row["gift_id"] . "^?";
+	   $gift_count++;
+	}
+	   
+	return "1^?" . $page . "^?" . $gift_count . "^?" . $more . "^?" . $user_id . "^?" . $ret_val;
+}
+
+function BumpGift($user_id,$gift_id) {
+	$gift_array = array();
+	$i = 0;
+	
+    $row = perform_query("select * from gift where gift_id=$gift_id",SELECT);
+
+	if ($row->receiver != $user_id) {
+		return "-1^?wrong user";
+	}
+	
+	$cur = perform_query("SELECT * FROM gift WHERE displayorder <= ".$row->displayorder." ORDER BY displayorder DESC", MULTISELECT);
+	while ($row2 = mysql_fetch_array( $cur )) {
+	   $gift_array[$i] = $row2["gift_id"];
+	   $i++;
+    }
+	foreach ($gift_array as $g) {
+	   perform_query("update gift set displayorder=displayorder+1 where gift_id='$g'",UPDATE); 
+	}
+
+	perform_query("update gift set displayorder=0 where gift_id='$gift_id'",UPDATE);    
+
+	return "1^?gift bumped";
+}
+
+function DeleteGift($user_id,$gift_id) {
+	$gift_array = array();
+	$i = 0;
+	
+    $row = perform_query("select * from gift where gift_id=$gift_id",SELECT);
+
+	if ($row->receiver != $user_id) {
+		return "-1^?wrong user";
+	}	
+	
+	$cur = perform_query("SELECT * FROM gift WHERE displayorder >= ".$row->displayorder." ORDER BY displayorder DESC", MULTISELECT);
+	while ($row2 = mysql_fetch_array( $cur )) {
+	   $gift_array[$i] = $row2["gift_id"];
+	   $i++;
+    }
+	foreach ($gift_array as $g) {
+	   perform_query("update gift set displayorder=displayorder-1 where gift_id='$g'",UPDATE); 
+	}
+
+	perform_query("delete from gift where gift_id='$gift_id'",DELETE);
+
+	return "1^?gift deleted";
+}
 
 function UserQuery($q) {
     $ret_value = "";
