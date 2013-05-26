@@ -583,7 +583,7 @@ function show_forum() {
 		start = end - settings.forums_per_tab;
 			
 		//if the total number forums dosen't divide evenly with the total number of tabs, then you have to do this adjustment
-		if ((settings.total_forums % settings.forums_per_tab != 0) && (5 - globals.current_forum_tab) == (Math.floor((settings.total_forums / settings.forums_per_tab)))) {
+		if ((settings.total_forums % settings.forums_per_tab != 0) && (10 - globals.current_forum_tab) == (Math.floor((settings.total_forums / settings.forums_per_tab)))) {
 		   start += settings.forums_per_tab - (settings.total_forums % settings.forums_per_tab);
 		}		
 	} else if (globals.current_forum_tab == "a") { //it's the articles tab
