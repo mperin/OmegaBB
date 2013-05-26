@@ -428,72 +428,13 @@ function get_tab(page){
 	globals.content_height = "85%";
 	$('Content').setAttribute("style","height:"+globals.content_height+";left:"+globals.content_left+";top:"+globals.content_top+";"); 
 
-    if (page == "forum0") {
+    if (page.match(/^forum/)) {
+        temp = page.replace(/^forum/,"");
         set_display("top_area:inline","midrow:none","content_area:none","inputdiv:none","topbar:none","bottombar:none");
-		set_class("forumtab0");
-        globals.current_forum_tab = 0;
-        show_forum();
-	}
-	if (page == "forum1") {
-        set_display("top_area:inline","midrow:none","content_area:none","inputdiv:none","topbar:none","bottombar:none");
-        set_class("forumtab1");
-        globals.current_forum_tab = 1;
+        set_class("forumtab"+temp);
+        globals.current_forum_tab = temp;
 		show_forum();
-	}
-	if (page == "forum2") {
-        set_display("top_area:inline","midrow:none","content_area:none","inputdiv:none","topbar:none","bottombar:none");
-        set_class("forumtab2");
-        globals.current_forum_tab = 2;
-		show_forum();
-	}
-	if (page == "forum3") {
-        set_display("top_area:inline","midrow:none","content_area:none","inputdiv:none","topbar:none","bottombar:none");
-        set_class("forumtab3");
-        globals.current_forum_tab = 3;
-		show_forum();
-	}	
-	if (page == "forum4") {
-        set_display("top_area:inline","midrow:none","content_area:none","inputdiv:none","topbar:none","bottombar:none");
-        set_class("forumtab4");
-        globals.current_forum_tab = 4;
-		show_forum();
-	}	
-	if (page == "forum5") {
-        set_display("top_area:inline","midrow:none","content_area:none","inputdiv:none","topbar:none","bottombar:none");
-        set_class("forumtab5");
-        globals.current_forum_tab = 5;		
-		show_forum();
-	}		
-    if (page == "forum6") {
-        set_display("top_area:inline","midrow:none","content_area:none","inputdiv:none","topbar:none","bottombar:none");
-		set_class("forumtab6");
-        globals.current_forum_tab = 6;
-        show_forum();
-	}
-	if (page == "forum7") {
-        set_display("top_area:inline","midrow:none","content_area:none","inputdiv:none","topbar:none","bottombar:none");
-        set_class("forumtab7");
-        globals.current_forum_tab = 7;
-		show_forum();
-	}
-	if (page == "forum8") {
-        set_display("top_area:inline","midrow:none","content_area:none","inputdiv:none","topbar:none","bottombar:none");
-        set_class("forumtab8");
-        globals.current_forum_tab = 8;
-		show_forum();
-	}
-	if (page == "forum9") {
-        set_display("top_area:inline","midrow:none","content_area:none","inputdiv:none","topbar:none","bottombar:none");
-        set_class("forumtab9");
-        globals.current_forum_tab = 9;
-		show_forum();
-	}	
-	if (page == "forum10") {
-        set_display("top_area:inline","midrow:none","content_area:none","inputdiv:none","topbar:none","bottombar:none");
-        set_class("forumtab10");
-        globals.current_forum_tab = 10;
-		show_forum();
-	}	
+    }	
 	if (page == "articles") {
         set_display("top_area:inline","midrow:none","content_area:none","inputdiv:none","topbar:none","bottombar:none");
         set_class("articlestab");
