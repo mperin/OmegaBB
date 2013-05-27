@@ -137,7 +137,7 @@ function load_site(thread_id,page_num,page_is_div) {
 	   } else if (settings.second_tab_enabled) {
 	      show_frame(settings.second_tab_location,settings.second_tab_is_div);
 	   } else if (settings.enable_forums) {
-		  get_tab("forum"+ (6 - Math.ceil((settings.total_forums / settings.forums_per_tab)))); 
+		  get_tab("forum"+ (11 - Math.ceil((settings.total_forums / settings.forums_per_tab)))); 
        } else if (settings.enable_articles) {
 	      get_tab("articles");
 	   } else if (settings.enable_private_threads) {
@@ -887,7 +887,7 @@ function refresh_forum(originalRequest){
         alert(temp_array[1]);
 		updater();
 		if (settings.enable_forums) {
-		   get_tab("forum"+ (6 - Math.ceil((settings.total_forums / settings.forums_per_tab)))); 
+		   get_tab("forum"+ (11 - Math.ceil((settings.total_forums / settings.forums_per_tab)))); 
 		} else if (settings.enable_articles) {
 		   get_tab("articles");
 		} else if (settings.enable_private_threads) {
@@ -925,7 +925,7 @@ function populate_thread(originalRequest)
 {
 	if (globals.current_forum_tab == "None") {
 		if (settings.enable_forums) {
-		   get_tab("forum"+ (6 - Math.ceil((settings.total_forums / settings.forums_per_tab)))); 
+		   get_tab("forum"+ (11 - Math.ceil((settings.total_forums / settings.forums_per_tab)))); 
 		} else if (settings.enable_articles) {
 		   get_tab("articles");
 		} else if (settings.enable_private_threads) {
@@ -2067,7 +2067,7 @@ function makenewuserResponse(originalRequest)
 		} else if (settings.second_tab_enabled) {
 		  show_frame(settings.second_tab_location,settings.second_tab_is_div);
 		} else if (settings.enable_forums) {
-		  get_tab("forum"+ (6 - Math.ceil((settings.total_forums / settings.forums_per_tab)))); 
+		  get_tab("forum"+ (11 - Math.ceil((settings.total_forums / settings.forums_per_tab)))); 
 		} else if (settings.enable_articles) {
 		  get_tab("articles");
 		} else if (settings.enable_private_threads) {
@@ -2660,7 +2660,7 @@ function special_formatting(temp_array,offset,helpline,readonly) {
 	offset += 3;
 	return_value += ',&nbsp;&nbsp;<acronym title="'+helpline.get(temp_array[offset])+'">'+temp_array[offset]+'</acronym>&nbsp;<input '+extra2+' type="text" id="'+temp_array[offset]+'" maxlength="5" style="overflow:hidden;width:20px" class="theinputbox" value="'+temp_array[offset+2]+'">';
 	offset += 3;
-	return_value += '<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<acronym title="'+helpline.get(temp_array[offset])+'">'+temp_array[offset]+'</acronym>&nbsp;&nbsp;&nbsp;<input '+extra2+' style="overflow:hidden;width: 450px;" type="text" id="'+temp_array[offset]+'" maxlength="1024" class="theinputbox" value="'+temp_array[offset+2]+'">';
+	return_value += '<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<acronym title="'+helpline.get(temp_array[offset])+'">'+temp_array[offset]+'</acronym>&nbsp;&nbsp;&nbsp;<input '+extra2+' style="overflow:hidden;width: 700px;" type="text" id="'+temp_array[offset]+'" maxlength="1024" class="theinputbox" value="'+temp_array[offset+2]+'">';
 	offset += 3;
 	return_value += '<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<acronym title="'+helpline.get(temp_array[offset])+'">'+temp_array[offset]+'</acronym>&nbsp;<input '+extra2+' style="overflow:hidden;width: 700px;" type="text" id="'+temp_array[offset]+'" maxlength="1024" class="theinputbox" value="'+temp_array[offset+2]+'">';
 	offset += 3;
@@ -4084,7 +4084,7 @@ function approve_event_response(originalRequest) {
 	alert(temp_array[1]);
 	updater();
 	if (settings.enable_forums) {
-	   get_tab("forum"+ (6 - Math.ceil((settings.total_forums / settings.forums_per_tab)))); 
+	   get_tab("forum"+ (11 - Math.ceil((settings.total_forums / settings.forums_per_tab)))); 
 	} else if (settings.enable_articles) {
 	   get_tab("articles");
 	} else if (settings.enable_private_threads) {
@@ -4105,7 +4105,7 @@ function disapprove_event_response(originalRequest) {
 	alert(temp_array[1]);
 	updater();
 	if (settings.enable_forums) {
-	   get_tab("forum"+ (6 - Math.ceil((settings.total_forums / settings.forums_per_tab)))); 
+	   get_tab("forum"+ (11 - Math.ceil((settings.total_forums / settings.forums_per_tab)))); 
 	} else if (settings.enable_articles) {
 	   get_tab("articles");
 	} else if (settings.enable_private_threads) {
