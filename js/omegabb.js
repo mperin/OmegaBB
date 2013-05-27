@@ -4157,11 +4157,11 @@ function load_profile_page(user_id) {
 }
 
 function profile_page_response(originalRequest)	{
-    var part1, part2, part3, part4, part5, part6, mod_stuff, temp_img_src, status_text, send_message_button;
+    var part1, part2, part3, part4, part5, part6, mod_stuff, temp_img_src, status_text, send_message_button, gifts;
 
     var temp_string = originalRequest.responseText;
     var temp_array = temp_string.split("^?");
-
+    
 	set_theme(window.parent.account_info.theme);	
 
 	if (error_code(temp_array)) {$('profile_top').innerHTML = temp_array[1]; return;}
@@ -4267,7 +4267,8 @@ function profile_page_response(originalRequest)	{
 	} else {
 	   part6 = "";
 	}
-
+	
+    gifts = "";
 	if (total_gifts) {
 		var extra = "";
 		var extra2 = "";
@@ -4318,14 +4319,14 @@ function profile_page_response(originalRequest)	{
 	}
 
 	if (status == -1) {
-		$('profile_top').innerHTML = "<table border=0><tr><td><img src='"+settings.system_avatar+"'></td>" + 
+		$('profile_top').innerHTML = "z<table border=0><tr><td><img src='"+settings.system_avatar+"'></td>" + 
 		"<td class='colmod'>&nbsp;<span class='profile_title'>"+username+"</span><br>&nbsp;&nbsp;&nbsp;"+intext("user id")+": "+user_id+"<br>"+
 		status_text+"<br>&nbsp;&nbsp;&nbsp;"+"</tr></table>";
 	} else {
-		$('profile_top').innerHTML = "<table border=0><tr><td>"+temp_img_src+"</td><td class='colmod'>&nbsp;<span class='profile_title'>"+username+"</span>"
+		$('profile_top').innerHTML = "<table border=0><td>"+temp_img_src+"</td><td class='colmod'>&nbsp;<span class='profile_title'>"+username+"</span>"
 		+"<br>&nbsp;&nbsp;&nbsp;"+intext("user id")+": "+user_id+part6+"<br>&nbsp;&nbsp;&nbsp;"+intext("date joined")+": "+join_date+"<br>&nbsp;&nbsp;&nbsp;"+intext("number of posts")+": "+num_posts+"<br>"
 		+status_text+"<br>&nbsp;&nbsp;&nbsp;"+intext("Last online: ")+"<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+last_online+"</td> "+ mod_stuff + extraspace + gifts +"</tr></table>";
-	}
+	}	
 
 	if (settings.enable_private_threads && status != -1 && window.parent.globals.is_connected) {
 	   send_message_button = '<br><input type="button" onClick="javascript:window.parent.send_user_message(\''+username.replace(/'/g,"\\'") +'\')" style="position:fixed;right:60px;bottom:40px;" class="rtbutton" name="sumbit" value="'+intext('Send Message')+'">'
