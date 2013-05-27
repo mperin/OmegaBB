@@ -137,7 +137,7 @@ function load_site(thread_id,page_num,page_is_div) {
 	   } else if (settings.second_tab_enabled) {
 	      show_frame(settings.second_tab_location,settings.second_tab_is_div);
 	   } else if (settings.enable_forums) {
-		  get_tab("forum"+ (11 - Math.ceil((settings.total_forums / settings.forums_per_tab)))); 
+		  get_tab("forum0"); 
        } else if (settings.enable_articles) {
 	      get_tab("articles");
 	   } else if (settings.enable_private_threads) {
@@ -276,20 +276,20 @@ function show_tabs() {
    if (settings.enable_articles) {html += '<div id="articlestab" class="tab" ><a onclick="javascript:get_tab(\'articles\')">'+settings.articles_tab_name+'</a></div>';
    } else {html += '<div id="articlestab" class="tab" STYLE="display:none;width:0%;min-width:0%;"></div>';}
 
-   var number = 10;
+   var number = 0;
    var part = "";
    if (settings.enable_forums) {	
 	   for (i = 0; i < settings.total_forums; i += settings.forums_per_tab) {
-    	  part = '<div id="forumtab'+number+'" class="tab" ><a onclick="javascript:get_tab(\'forum'+number+'\')">'+settings.forum_tab_names[number]+'</a></div>' + part;
-		  number--;   
+    	  part += '<div id="forumtab'+number+'" class="tab" ><a onclick="javascript:get_tab(\'forum'+number+'\')">'+settings.forum_tab_names[number]+'</a></div>';
+		  number++;   
 	   }
    } 
    html += part;
    
    //unused forum tabs must still exist, but display is set to none
-   while (number > -1) {
+   while (number < 11) {
    	  html += '<div id="forumtab'+number+'" class="tab" STYLE="display:none;width:0%;min-width:0%;"></div>';
-      number--;
+      number++;
    }
 
    if (settings.enable_private_threads) {html += '<div id="pttab" class="tab" ><a onclick="javascript:get_tab(\'pt\')">'+settings.pt_tab_name+'</a></div>';
@@ -513,20 +513,28 @@ function show_forum() {
 	if (!isNaN(globals.current_forum_tab)) { //it's one of the public forums tab
 	    if (cache.forum_is_set == 0) {
 		   hide_footer();
-		   $('top_area').innerHTML = '<div style="width:100%;max-width:1250px;padding-top:10%;font-size:22px;font-weight:bold;color:#bbb;text-align:center;"><img border="0" src="img/indicator.gif"> </div>';
+		   $('top_area').innerHTML = '<div style="width:100%;max-width:1250px;padding-top:10%;text-align:center;"><img border="0" src="img/indicator.gif"> </div>';
 		   if (globals.popforum_mutex) {return;}
 		   globals.popforum_mutex = 1;
 		   globals.hitf_semaphore++;
 		   var myAjax3 = new Ajax.Request('popforum.php', {method: 'get', parameters: '', onComplete: populate_forum});
 		   return;
 	    } 
-		end = 11 - ((10 - globals.current_forum_tab) * settings.forums_per_tab);
-		start = end - settings.forums_per_tab;
-			
-		//if the total number forums dosen't divide evenly with the total number of tabs, then you have to do this adjustment
-		if ((settings.total_forums % settings.forums_per_tab != 0) && (10 - globals.current_forum_tab) == (Math.floor((settings.total_forums / settings.forums_per_tab)))) {
-		   start += settings.forums_per_tab - (settings.total_forums % settings.forums_per_tab);
-		}		
+		
+		
+		if (settings.total_forums % settings.forums_per_tab != 0) {
+		    //if the total number forums dosen't divide evenly with the total number of tabs, then you have to do this adjustment
+			if (globals.current_forum_tab == 0) {
+				start = 0
+				end = (settings.total_forums % settings.forums_per_tab);
+			} else {
+				start = ((globals.current_forum_tab - 1) * settings.forums_per_tab) + (settings.total_forums % settings.forums_per_tab);
+				end = start + settings.forums_per_tab;
+			}
+		} else {
+			start = (globals.current_forum_tab * settings.forums_per_tab) ;
+			end = start + settings.forums_per_tab;		
+		}
 	} else if (globals.current_forum_tab == "a") { //it's the articles tab
 	    if (cache.forum_is_set == 0) {
 		   hide_footer();
@@ -887,7 +895,7 @@ function refresh_forum(originalRequest){
         alert(temp_array[1]);
 		updater();
 		if (settings.enable_forums) {
-		   get_tab("forum"+ (11 - Math.ceil((settings.total_forums / settings.forums_per_tab)))); 
+		   get_tab("forum0");
 		} else if (settings.enable_articles) {
 		   get_tab("articles");
 		} else if (settings.enable_private_threads) {
@@ -925,7 +933,7 @@ function populate_thread(originalRequest)
 {
 	if (globals.current_forum_tab == "None") {
 		if (settings.enable_forums) {
-		   get_tab("forum"+ (11 - Math.ceil((settings.total_forums / settings.forums_per_tab)))); 
+		   get_tab("forum0"); 
 		} else if (settings.enable_articles) {
 		   get_tab("articles");
 		} else if (settings.enable_private_threads) {
@@ -2067,7 +2075,7 @@ function makenewuserResponse(originalRequest)
 		} else if (settings.second_tab_enabled) {
 		  show_frame(settings.second_tab_location,settings.second_tab_is_div);
 		} else if (settings.enable_forums) {
-		  get_tab("forum"+ (11 - Math.ceil((settings.total_forums / settings.forums_per_tab)))); 
+		  get_tab("forum0"); 
 		} else if (settings.enable_articles) {
 		  get_tab("articles");
 		} else if (settings.enable_private_threads) {
@@ -4084,7 +4092,7 @@ function approve_event_response(originalRequest) {
 	alert(temp_array[1]);
 	updater();
 	if (settings.enable_forums) {
-	   get_tab("forum"+ (11 - Math.ceil((settings.total_forums / settings.forums_per_tab)))); 
+	   get_tab("forum0"); 
 	} else if (settings.enable_articles) {
 	   get_tab("articles");
 	} else if (settings.enable_private_threads) {
@@ -4105,7 +4113,7 @@ function disapprove_event_response(originalRequest) {
 	alert(temp_array[1]);
 	updater();
 	if (settings.enable_forums) {
-	   get_tab("forum"+ (11 - Math.ceil((settings.total_forums / settings.forums_per_tab)))); 
+	   get_tab("forum0"); 
 	} else if (settings.enable_articles) {
 	   get_tab("articles");
 	} else if (settings.enable_private_threads) {
@@ -4567,7 +4575,7 @@ function show_forum_list_response(originalRequest) {
    var temp_array = temp_string.split("^?");
    var count = parseInt(temp_array[1]);
    var part1 = "";
-   
+
    for (var i = 0; i < count; i++) {
       var offset = 2 + (i*2);
       part1 += '<option value="'+temp_array[offset+0]+'">'+temp_array[offset+1]+'</option>';

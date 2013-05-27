@@ -64,6 +64,7 @@ function GetGiftList() {
 		while ($file = readdir($handle)) {
 			if ($file != "." && $file != "..") {
 	            if ($file == "Thumbs.db") {continue;}
+				if ($file == ".htaccess") {continue;}
 				$files[] = $file;
 				$count++;
 			}
@@ -1779,12 +1780,11 @@ function ArticlesIndex($page) {
 
 function GetForumNames($current_forum_id,$total_forums) {
 	global $settings;
-	$start = 12 - $total_forums;
 
 	$count = 0;
-	for ($i = $start; $i < 12; $i++) {
+	for ($i = 1; $i <= $total_forums; $i++) {
 	    if ($i == $current_forum_id) {continue;}
-		$forum_list .= $i. "^?"  .$settings->forum_topic_names[$i - 1]. "^?";
+		$forum_list .= $i. "^?"  .$settings->forum_topic_names[$i-1]. "^?";
 		$count++;
 	}
 

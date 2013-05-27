@@ -213,7 +213,7 @@ function IsValidThread($thread_id,$for_entry=0) {
 function IsValidForum($forum_id) {
   global $settings;
 
-   if ($forum_id <= (11 - $settings->total_forums)) {
+   if (($forum_id > (11 - $settings->total_forums)) && (forum_id > 12)) {
       return 0;
    }
    

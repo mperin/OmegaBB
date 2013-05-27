@@ -36,6 +36,7 @@
 		while ($file = readdir($handle)) {
 			if ($file != "." && $file != "..") {
 	            if ($file == "Thumbs.db") {continue;}
+				if ($file == ".htaccess") {continue;}				
 				$files[] = $file;
 				$count++;
 			}

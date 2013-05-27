@@ -259,18 +259,16 @@ function SendUpdatedThreads($user_id,$last_update) {
 
 //using $hitf it displays any new threads in the forum
 function GetForumsDeltas($hitf) {
-   global $settings;
-   $new_hitf = 0;
-   $count = 0;
-   $user_id = Check_Auth();	   
-   $row_info = "";
-   $extra = "";
-   
+	global $settings;
+	$new_hitf = 0;
+	$count = 0;
+	$user_id = Check_Auth();	   
+	$row_info = "";
+	$extra = "";
+
 	if (!$settings->enable_forums) {
 	   $extra .= "and forum_id > 11 ";
-	} else {
-	   $extra .= "and forum_id > " . (11 - $settings->total_forums) . " ";
-	}			
+	} 		
 	if (!$settings->enable_private_threads) {
 	   $extra .= "and forum_id != 12 ";
 	}
@@ -278,24 +276,24 @@ function GetForumsDeltas($hitf) {
 	   $extra .= "and forum_id != 13 ";
 	}	
    
-   $cur = perform_query("select * from thread where needs_approval = 0 and thread_id > $hitf $extra ORDER BY thread_id",MULTISELECT);    	   
+	$cur = perform_query("select * from thread where needs_approval = 0 and thread_id > $hitf $extra ORDER BY thread_id",MULTISELECT);    	   
 
-   while ($row = mysql_fetch_array( $cur )) {
-	  if ($row["thread_id"] > $new_hitf) { $new_hitf = $row["thread_id"]; }
-	  if ($row["forum_id"] == 12) {
-		 if (preg_match('/,' . $user_id . ';/', $row["block_allow_list"])) {
-			//its on the list, so send
-		 } else {
-			continue;  
-		 }
-      }
-	  if ($row["state"] == 2) {
-         continue; //thread is marked as deleted
-      }		 
-	  
-	  $row_info .=  $row["forum_id"] . "^?" . $row["thread_id"] . "^?" . $row["title"] . "^?" . $row["state"] . "^?";
-	  $count++;
-   }
+	while ($row = mysql_fetch_array( $cur )) {
+	if ($row["thread_id"] > $new_hitf) { $new_hitf = $row["thread_id"]; }
+		if ($row["forum_id"] == 12) {
+			if (preg_match('/,' . $user_id . ';/', $row["block_allow_list"])) {
+				//its on the list, so send
+			} else {
+				continue;  
+			}
+		}
+		if ($row["state"] == 2) {
+			continue; //thread is marked as deleted
+		}		 
+
+		$row_info .=  $row["forum_id"] . "^?" . $row["thread_id"] . "^?" . $row["title"] . "^?" . $row["state"] . "^?";
+		$count++;
+	}
    
    return ($new_hitf . "^?" . $count . "^?" . $row_info);
 }

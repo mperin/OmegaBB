@@ -1,5 +1,5 @@
 
-OmegaBB developmental version - build 219
+OmegaBB developmental version - build 220
 ====================================
 
 OmegaBB is a message board which features a fast interface, real-time notification when
@@ -15,7 +15,7 @@ Changes in developmental version
 - gifts
 - option to need moderator approval from postings by new users
 - option to auto-delete old private threads
-- forum tab config improved
+- forum config improved
 
 Changes in version 0.9.2 (Feb 12, 2013)
 
@@ -131,7 +131,7 @@ Changes in version 0.3
 
 License:
 
-OmegaBB developmental version - build 219  Copyright (c) 2013, Ryan Smiderle.  All rights reserved.
+OmegaBB developmental version - build 220  Copyright (c) 2013, Ryan Smiderle.  All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted
 provided that the following conditions are met:
