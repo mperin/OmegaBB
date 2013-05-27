@@ -86,7 +86,9 @@ function ApproveEvent($event_id) {
 	   if (!IsMod(Check_Auth())) {return "-1^?not a moderator";}
 	   $row2 = perform_query("select * from thread where thread_id=".$row->thread_id,SELECT);
 	   $row3 = perform_query("select * from post where message_id=".$row->post_id,SELECT);
-    }
+    } else if (Check_Auth() != $row->receiver) {
+	   return "-1^?error";
+	}
 	
 	if ($row->type == 'post') {
 		perform_query("update post set needs_approval=0 where message_id = ".$row->post_id,UPDATE);
@@ -133,8 +135,10 @@ function DisapproveEvent($event_id) {
 	if ($row->type != 'gift') {
 	   if (!IsMod(Check_Auth())) {return "-1^?not a moderator";}
 	   LogEvent(1,intext("Rejected posting made by") . " %%u" . $row->sender . ":" . $row2->username . ";");
+	} else if (Check_Auth() != $row->receiver) {
+	   return "-1^?error";
 	}
-	
+
 	perform_query("delete from queue where event_id='$event_id'",DELETE);
 	
     if ($row->type == 'post') {
@@ -173,8 +177,6 @@ function DisapproveEvent($event_id) {
 }
 
 function ShowEvent($user_id,$event_id) { 
-//sercurity check
-
     global $settings;
     $row = perform_query("select * from queue where event_id=$event_id",SELECT);
 	$row3 = perform_query("select username from user where user_id=".$row->sender,SELECT);
@@ -182,7 +184,11 @@ function ShowEvent($user_id,$event_id) {
 	if ($row->type != 'gift') {
 		$row2 = perform_query("select * from post where message_id=".$row->post_id,SELECT);
 		$row4 = perform_query("select title from thread where thread_id=".$row->thread_id,SELECT);
+		if (!IsMod($user_id)) {return "-1^?error";}
+	} else if ($user_id != $row->receiver) {
+	    return "-1^?error";
 	}
+
     if ($row->type == 'post') {
 	    $return_string = "1^?" . $event_id . "^?" . $row->type . "^?" . $row->sender  . "^?" . $row3->username . "^?" . $row->thread_id . "^?" . $row4->title . "^?" . $row2->message . "^?" . $row2->tstamp;
 	} else if ($row->type  == 'editpost' || $row->type  == 'editwiki') {	

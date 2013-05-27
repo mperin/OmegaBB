@@ -13,7 +13,7 @@ header( 'Expires: 0' );
 	$turn_off=GetParam($_REQUEST,'turn_off','');
 	
 	$auth_ret = Check_Auth();
-    if (!isMod($auth_ret)) {
+    if (!IsMod($auth_ret)) {
     	echo "-1^?".intext("user not a moderator");
     	return;
     }   
