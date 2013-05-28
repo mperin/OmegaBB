@@ -4,14 +4,12 @@
 /* BlueRobot was here. http://bluerobot.com/web/layouts/layout2.html */
 /* http://css.maxdesign.com.au/listutorial/horizontal_master.htm */
 html {
-overflow-y: scroll;
+	overflow-y: scroll;
 }
-
 body { font-family:%%body_font%%; margin:0; padding:0; overflow-x:hidden;}
-/*body { margin:0; overflow-x:hidden; padding:0; }*/
 a, u { cursor:pointer; display:inline; }
 [onclick] {
-cursor:pointer;
+	cursor:pointer;
 }
 p.sysop { color:%%text_color1%%; display:inline; font-size:13px; font-weight:bold; }
 p.system {
@@ -42,7 +40,6 @@ max-width: 1160px;
 .inline_img a { display:inline; position:relative; }
 .member_box { color:%%text_color2%%; font-size:12px; left:0; margin-left:0; max-width:650px; padding-left:3px; padding-right:3px; position:relative; text-align:center;  }
 .private_thread_box { color:%%text_color1%%; display:inline-block; font-size:12px; font-weight:normal; left:0; margin-left:0; margin-top:2px; max-width:650px; padding-left:0; padding-right:3px; position:relative; right:0; text-align:right; vertical-align:top; }
-
 .pcontainer {
    float: right;
    width: 25%;
@@ -72,11 +69,9 @@ iframe.hidden { height:0; visibility:hidden; width:0; }
 table#livebar { background-color:%%background_color1%%; color:%%text_color2%%; width:100%; }
 table#livebar td { border:medium none; margin:-30px; }
 .lb { background-color:%%background_color1%%; border-color:%%color2%%; color:%%text_color2%%; font-size:10px; left:0; max-height:5px; position:relative; vertical-align:top; width:1%; }
-
 .modbutton { font-size: 20px; color:%%text_color1%%; height:1px; left:0; position:relative; vertical-align:top; width:200px; }
 .modbutton a:hover { text-decoration:underline; }
 .modbuttonselected { font-size: 20px; background-color:%%color3%%; border:thin solid %%forum_title_color%%; color:%%text_color1%%; height:1px; left:0; position:relative; vertical-align:top; width:200px; }
-
 table#logtable { margin-left:0; margin-right:0; right:0; max-width:1165px; width:100%; }
 table#logtable td { font-family:%%post_font%%;}
 table#logtable tr { background-color:%%color3%%; left:0; margin-left:-10px; margin-right:20px; right:20px; width:1060px; }
@@ -127,7 +122,6 @@ table#thread_table td { padding-bottom:1px; padding-left:0; text-align:left; tab
 	color: %%forum_title_color%%;
 	text-decoration: none;
 }
-
 table#header_row { background-color:%%background_color1%%; width:100%; }
 table#header_row td { border:medium none; padding:10px 0 7px 4px; }
 .hrow0 { background-color:%%background_color1%%; color:%%text_color2%%; font-size:20px; height:1px; text-align:left; width:95%; }
@@ -148,7 +142,6 @@ table#statustable { width:100%; }
 table#statustable td { border:medium none; font-size:14px; margin:0; padding:5px; }
 table#statustable td a { border:medium none; font-size:14px; margin:0; padding:5px; }
 table#statustable td a:visited { border:medium none; font-size:12px; padding:5px; }
-
 .status0 { background-color:%%color3%%; color:%%text_color1%%; font-size:12px; height:10px; text-align:left; width:80%; }
 .status0 a { background-color:%%color3%%; color:%%text_color1%%; font-size:12px; height:10px; text-align:left; text-decoration:none; width:80%; }
 .status0 a:visited { background-color:%%color3%%; color:%%text_color1%%; font-size:12px; height:10px; text-align:left; width:80%; }
@@ -172,7 +165,6 @@ table#bottomrow td { border:medium none; padding:5px; }
 .bottom4 { font-weight:bold; width:5%; }
 .h3 { color:white; }
 #strong { color:%%title_color%%; font-size:20px; }
-
 #container {
 	width: 100%;
 	background-color:%%color12%%;
@@ -185,20 +177,14 @@ table#bottomrow td { border:medium none; padding:5px; }
 	left:186px;
 	position:absolute;
 }
-
 #menu ul
 {
-	/*position:absolute;*/
-	/*top:-77px;*/
 	right:0px;
 	vertical-align: center;
 	list-style-type: none;
 	text-align: left;
-	/*display:none*/
 }
-
 #menu ul li { display: inline; }
-
 #menu ul li a
 {
 	padding: 0.3em 1.25em;
@@ -209,13 +195,11 @@ table#bottomrow td { border:medium none; padding:5px; }
 	vertical-align: center;
 	text-decoration: none;
 }
-
 #menu ul li a:hover
 {
 	color: %%title_colour_selected%%;
 	background-color: %%colour1%%;
 }
-
 #tabs {
     width:100%;
     text-align:left;
@@ -225,7 +209,6 @@ table#bottomrow td { border:medium none; padding:5px; }
 	bottom: 0px;
 	height:32px;
 }
-
 .tab {
     display:table-cell;
 	width: 7%;
@@ -234,10 +217,9 @@ table#bottomrow td { border:medium none; padding:5px; }
 	height:30px; 
 	line-height:42px;
 	text-align: center;
-    border-left: 10px solid %%back_tab_color%%;
-	border-right: 10px solid %%back_tab_color%%;
+    border-left: 4px solid %%back_tab_color%%;
+	border-right: 4px solid %%back_tab_color%%;
 }
-
 .tabselected {
     display:table-cell;
 	width: 7%;
@@ -246,15 +228,13 @@ table#bottomrow td { border:medium none; padding:5px; }
 	height:30px; 
 	line-height:42px;
 	text-align: center;
-    border-left: 10px solid %%back_tab_color%%;
-	border-right: 10px solid %%back_tab_color%%;	
+    border-left: 4px solid %%back_tab_color%%;
+	border-right: 4px solid %%back_tab_color%%;	
 }
-
 .filled {
     width:100%;
     clear:both;
 }
-
 body { background-color:%%color2%%; font-size:13px; height:100%; margin:0; padding:0; }
 h1 { color:%%color9%%; font-size:28px; font-weight:900; line-height:28px; margin:0 0 15px; padding:0; }
 p { color:%%text_color1%%; font-size:11px line-height:20px;
@@ -264,7 +244,7 @@ margin:0 0 16px; padding:0; }
 #inputdiv { color:%%text_color1%%; width:100%; }
 #obb_header { background-color:%%back_tab_color%%; background-repeat:repeat-x; border-bottom:40px solid %%back_tab_color%%; height:40px; margin:0 0 10px; padding:0; }
 #Content { background-color:%%color2%%; left:180px; margin:0; overflow-x:visible; padding:10px 20px 45px 10px; position:absolute; right:0; top:79px; z-index:2; }
-#profile_content { overflow-y:auto; max-height:340px; background-color:%%color3%%; bottom:20px; color:%%text_color2%%; font-size:16px; left:20px; padding:10px 10px 20px; position:relative; right:8px; top:20px; width:735px; }
+#profile_content { overflow-y:auto; min-height:350px; background-color:%%color3%%; bottom:20px; color:%%text_color2%%; font-size:16px; left:20px; padding:10px 10px 20px; position:relative; right:8px; top:20px; width:735px; }
 .profile_title { background-color:%%color3%; color:%%title_color%%; font-size:20px; padding:10px; }
 #profile_top { min-height:195px; color:%%title_color%%; font-size:20px; text-decoration:none; vertical-align:top; }
 .colmod { border-bottom:thin solid #FFFFFF; border-color:#FFFFFF; border-top:thin solid #FFFFFF; background-color:%%color3%%; background-repeat:repeat-x; border-bottom:thin solid %%color2%%; border-color:%%color2%%; border-top:thin solid %%color2%%; color:%%text_color1%%; font-size:13px; height:1px; left:0; position:relative; vertical-align:top; width:200px; }
@@ -293,20 +273,16 @@ margin:0 0 16px; padding:0; }
 #bottombar {position:relative; top: 10px;}
 .pageexpandlink {color: %%text_color1%%; text-decoration: none; }
 .quote {
-position: relative;
-left: 30px;
-
-border-style:solid;
-border-width:2px;
-
-border-color: %%color2%%;
-margin-top:7px;
-margin-bottom:7px;
-margin-left:7px;
-margin-right:7px;
-
+	position: relative;
+	left: 30px;
+	border-style:solid;
+	border-width:2px;
+	border-color: %%color2%%;
+	margin-top:7px;
+	margin-bottom:7px;
+	margin-left:7px;
+	margin-right:7px;
 }
-
 /*webkit dosen't respect max-width on tables, so this is a workaround*/
 #width_kludge{
   max-width: 1250px;
@@ -314,16 +290,13 @@ margin-right:7px;
 #width_kludge2{
    max-width: 1160px;
 }
-
 .articleoptionbox {
    position: relative;
    left: 765px;
    bottom: 480px;
    width: 400px;
 }
-
 a { text-decoration:none; color:%%title_color%%; cursor: pointer; }
-
 #sddm
 { 
 margin: 0;
@@ -331,14 +304,12 @@ padding: 0;
 z-index: 30;
 float: right;
 }
-
 #sddm li
 { margin: 0;
 padding: 0;
 list-style: none;
 float: left;
 }
-
 #sddm li a
 { display: block;
 margin: 0 1px 0 0;
@@ -348,10 +319,8 @@ text-align: center;
 text-decoration: none;
 width: 55px;
 }
-
 #sddm li a:hover
 { background-color:%%color14%%}
-
 #sddm div
 {position: absolute;
 visibility: hidden;
@@ -361,7 +330,6 @@ background: #EAEBD8;
 border: 1px solid #5970B2;
 z-index: 40;
 }
-
 #sddm div a
 { position: relative;
 display: block;
@@ -374,11 +342,9 @@ text-decoration: none;
 background: #EAEBD8;
 color: #2875DE;
 }
-
 #sddm div a:hover
 { background: #49A3FF;
 color: #FFF}
-
 #sddm span
 {position: absolute;
 visibility: hidden;
@@ -388,7 +354,6 @@ background: #EAEBD8;
 border: 1px solid #5970B2;
 z-index: 40;
 }
-
 #sddm span a
 { position: relative;
 display: block;
@@ -401,12 +366,9 @@ text-decoration: none;
 background: #EAEBD8;
 color: #2875DE;
 }
-
 #sddm span a:hover
 { background: #49A3FF;
 color: #FFF}
-
-
 /*generated by CSSButtonGenerator.com */
 .rtbutton {
 	-moz-box-shadow:inset 0px 1px 0px 0px #bbdaf7;
@@ -427,7 +389,6 @@ color: #FFF}
 }.rtbutton:hover {
 	background-color:%%color1%%;
 }
-
 .postbutton {
 	-moz-box-shadow:inset 0px 1px 0px 0px #bbdaf7;
 	-webkit-box-shadow:inset 0px 1px 0px 0px #bbdaf7;
@@ -447,7 +408,6 @@ color: #FFF}
 }.postbutton:hover {
 	background-color:%%color1%%;
 }
-
 .gifttext {
     max-width:250px;
 	border-radius: 5px;
@@ -460,21 +420,13 @@ color: #FFF}
 .giftimg {
    border:1px solid white;
 }
-
 .giftimg:hover {
    border:1px solid black;
 }
-  
 #giftscroll {
     position: relative;
-    /*left: -29px;
-	 bottom: -35px;
-	*/
 }
-
 .colprofile { background-color:%%color3%%; background-repeat:repeat-x; %%color2%%; border-color:%%color2%%; color:%%text_color1%%; font-size:13px; height:1px; left:0; position:relative; vertical-align:top; width:200px; }
 .colprofile a { background-color:%%color3%%; color:%%text_color1%%; left:0; position:relative; text-decoration:none; vertical-align:top; }
 .colprofile a:hover { color:%%title_color%%; }
-
-
 

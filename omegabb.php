@@ -26,6 +26,34 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 include_once('config.php');
 include_once('common.php');
 
+
+function SendCredits($auth_ret, $user_id, $amount) {
+	global $settings;
+	
+	if ($settings->deliver_credits > GetStatus($auth_ret)) {
+	   return "-1^?error";
+	}
+	if (!$amount) {
+		return "-1^?".intext("No amount given");
+	}
+	
+	$row = perform_query("select credits from user where user_id=$user_id",SELECT);
+
+	if (($amount + $row->credits) > $settings->max_credits) {
+		perform_query("update user "
+			. "\n set "			
+			. "\n credits='" . $settings->max_credits . "'"
+			. " where user_id='$user_id'",UPDATE); 	 
+	} else {
+		perform_query("update user "
+			. "\n set "		
+			. "\n credits=credits+'" . $settings->bonus_credits . "'"
+			. " where user_id='$user_id'",UPDATE); 	 
+	}
+	
+	return "1^?".intext("Credits sent");
+}
+
 function SendGift($sender, $receiver, $giftname, $msg) {
     global $settings;
 	

@@ -521,7 +521,6 @@ function show_forum() {
 		   return;
 	    } 
 		
-		
 		if (settings.total_forums % settings.forums_per_tab != 0) {
 		    //if the total number forums dosen't divide evenly with the total number of tabs, then you have to do this adjustment
 			if (globals.current_forum_tab == 0) {
@@ -2395,7 +2394,7 @@ function get_site_settings_response(originalRequest) {
 	+"(all moderators), 5 (admin only) or 6 (everyone soft deletes).  Soft deletions cause the post or thread to remain in the database until it's been pruned after about "
 	+ "2 weeks.  Note: file attachments are always hard deleted."));
 	helpline.set("forum_tab_names",intext("Names of the tabs used by the forum.  How many forum tabs are displayed depends on how many forums you have set, and how many "
-	+ "forums per tab (see Miscellaneous Settings).  Even if you're using less than six, they all need to be here, just edit the ones relevant to your configuration"));
+	+ "forums per tab.  Even if you're using less than 11, they all need to be here, just edit the ones relevant to your configuration"));
 	helpline.set("forum_topic_names",intext("Names of the forums.  Even if you've configured less than 11 forums, they all need to be here, just edit the ones relevant to your configuration"));
 	helpline.set("name_of_status_2",intext("This is the name of the status with a rank above 'regular user' (1) but below 'moderator' (3). "));
 	helpline.set("avatars_same_size",intext("If set, all avatars will have the dimensions of max_avatar_dimensions"));
@@ -2511,7 +2510,8 @@ function get_site_settings_response(originalRequest) {
 	helpline.set("gifts_enabled",intext("Allows users to send each other gifts that appear on their profile page, each gift costs one credit.  See the directory ./gifts"));
 	helpline.set("max_credits",intext("Maximum number of credits an user may hold"));
 	helpline.set("unlimited_credits",intext("Users with a status level of this or higher have an unlimited number of credits"));	
-
+	helpline.set("deliver_credits",intext("Users with a status level of this or higher may deliver any user credits"));	
+	
 	var count = parseInt(temp_array[0]);
 	var html = "";		
 	var inputfield = "";
@@ -4291,16 +4291,16 @@ function profile_page_response(originalRequest)	{
 		}
 		
 		var gifts = "<td class='colprofile' style='width:260px;text-align:right;display: table-cell; text-align: left; vertical-align: top;'>"
-		+ "<div id='gifttext' class='gifttext'></div><div id='gifttotal'>Gifts:"+extra+"</div>"
+		+ "<div id='gifttext' class='gifttext'></div><div id='gifttotal'>"+intext("Gifts")+":"+extra+"</div>"
 		+ "<div id='giftarea'>";
 
 		for (var i = 0; i < x; i++){
 		   offset= 19 + (i * 4);
 		   
 		   if (temp_array[offset+1]) {
-		      var msg = 'From ' + temp_array[offset] + ": " + temp_array[offset+1];
+		      var msg = intext('From')+' ' + temp_array[offset] + ": " + temp_array[offset+1];
 		   } else {
-		      var msg = 'From ' + temp_array[offset];
+		      var msg = intext('From')+' ' + temp_array[offset];
 		   }
 
 		   if (window.parent.account_info.user_id == user_id) {
@@ -4316,10 +4316,15 @@ function profile_page_response(originalRequest)	{
 					+ '</span>';		
             }			
 		} 
-
 		gifts += '</div>'+extra2 +'</td>';
 	}
 
+	if (settings.deliver_credits <= window.parent.account_info.status) {
+		send_credits_button = '<br><input type="button" onClick="javascript:send_credits_window('+user_id+',\''+username+'\')" style="position:fixed;right:270px;bottom:40px;" class="rtbutton" name="sumbit" value="'+intext('Send Credits')+'">'
+	} else {
+		send_credits_button = "";
+	}
+	
 	if ((window.parent.globals.is_connected) && (window.parent.account_info.credits != 0) && (window.parent.account_info.user_id != user_id)) {
 	   send_gift_button = '<br><input type="button" onClick="javascript:gift_list()" style="position:fixed;right:180px;bottom:40px;" class="rtbutton" name="sumbit" value="'+intext('Send Gift')+'">'
 	} else {
@@ -4344,8 +4349,33 @@ function profile_page_response(originalRequest)	{
 
     globals.temp_number = user_id;
 
-    $('inner_profile_content').innerHTML = '<div class="profiletext">' + profile_text + '</div>' + send_gift_button + send_message_button;
+    $('inner_profile_content').innerHTML = '<div class="profiletext">' + profile_text + '</div>' + send_credits_button + send_gift_button + send_message_button;
 }
+
+function send_credits_window(user_id,username) {
+	string = '<div class="profile_title">'+intext('Sending credits to')+' '+username+'&nbsp;&nbsp; </div>'
+	+ "<span><br>"+intext("number of credits")+": "	
+	+'<input style="overflow:hidden;width:20px;" type="text" id="creditamount" maxlength="2" class="theinputbox">'
+	+' <input type="button" onClick="javascript:send_credits('+user_id+');" class="rtbutton" name="sumbit" value="'+intext('Send')+'">	'
+	+' <input type="button" onClick="javascript:window.location.reload();" class="rtbutton" name="sumbit" value="'+intext('Cancel')+'">';
+
+	$('profile_content').setAttribute("style","height:400px;");
+	$("profile_content").innerHTML = string + '</div><div id="inner_profile_content">';
+}
+
+function send_credits(user_id) {  
+   var pars = 'user_id=' + user_id  + '&amount=' + $('creditamount').value;
+   $('profile_content').innerHTML = '<div style="text-align:center;"><img src="img/indicator.gif"></div>';
+   var myAjax = new Ajax.Request("send_credits.php", {method: 'get', parameters: pars, onComplete: send_credits_response});     
+}
+
+function send_credits_response(originalRequest) {
+    var temp_string = originalRequest.responseText;
+    var temp_array = temp_string.split("^?");
+	
+	alert(temp_array[1]);
+	window.location.reload();
+}	
 
 function gift_list() {
    $('profile_content').innerHTML = '<div style="text-align:center;"><img src="img/indicator.gif"></div>';
@@ -4417,7 +4447,7 @@ function gift_scroll_response(originalRequest) {
 
 	for (var i = 0; i < total; i++){
 		offset= 5 + (i * 4);
-		var msg = 'From '+temp_array[offset]+": "+temp_array[offset+1];
+		var msg = intext('From')+' '+temp_array[offset]+": "+temp_array[offset+1];
 
 		if (window.parent.account_info.user_id == user_id) {
 		   giftsarea += '<span style="float:left;" id=sddm><a onmouseover="javascript:show_gift_msg(\''+msg+'\')" onclick="javascript:mopen(\'gift'+i+'\');" onmouseout="hide_gift_msg();mclosetime();">'

@@ -210,4 +210,6 @@ $language_hash["Post disapproved"] = "text here";
 $language_hash["Rejected posting made by"] = "text here";
 $language_hash["rejected"] = "text here";
 $language_hash["Your post has been received and is pending approval"] = "text here";
+$language_hash["Credits sent"] = "text here";
+$language_hash["No amount given"] = "text here";
 ?>
