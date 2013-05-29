@@ -386,9 +386,6 @@ function SaveSiteSettings() {
     "linkedin_request_connections" => "bool",			
 	"linkedin_references_needed" => "int,0-x",	
     "minimum_status_of_linkedin_reference" => "int,0-5",		
-    "show_main" => "bool",	
-	"show_news" => "bool",
-    "show_extra" => "bool",	
     "enable_articles" => "bool",	
 	"enable_forums" => "bool",
     "enable_private_threads" => "bool",	
@@ -430,7 +427,6 @@ function SaveSiteSettings() {
 	"system_avatar" => "string",	
     "persistent_logo" => "bool",		
 	"profile_text_limit" => "int,0-x",
-    "help_button" => "int-array,6,0-1",		
     "update_frequency" => "int,1-x",			
     "thumb_width" => "int,1-x",		
     "thumb_height" => "int,1-x",		
@@ -693,9 +689,6 @@ function LinkedInLogin ($li_id) {
 	$first_query = "SELECT * FROM user WHERE linkedin_id='$li_id' AND status > -1"; 
 
 	$row = perform_query($first_query,SELECT);
-	if (!$row) {
-		return "-1^?".intext("Account disabled");
-	}
 
 	if (($info = lockdown_button_check(SITEDOWN)) && $row->status != 5) {
 	   $sysinfo = explode("^?",$info);
@@ -855,7 +848,19 @@ function LinkedInNewUser ($user_data,$user_connections) {
 			}   
 		}
         if ($references < $settings->linkedin_references_needed) {
-		    return "-1^?".intext("You do not have enough references to become a member of this site.  You must be LinkedIn contacts with at least "). $settings->linkedin_references_needed . intext(" local members");
+			if ($settings->minimum_status_of_linkedin_reference == 0 || $settings->minimum_status_of_linkedin_reference == 1) {
+			   $extra = intext("local member(s)");
+			}
+			if ($settings->minimum_status_of_linkedin_reference == 2) {
+			   $extra = $settings->name_of_status_2 . "(s)";
+			}
+			if ($settings->minimum_status_of_linkedin_reference == 3) {
+			   $extra = intext("moderators(s)");
+			}		
+			if ($settings->minimum_status_of_linkedin_reference == 5) {
+			   $extra = intext("administrator(s)");
+			}
+		    return "-1^?".intext("You do not have enough references to become a member of this site.  You must be LinkedIn contacts with at least "). $settings->linkedin_references_needed . " " . $extra;
 		}
 	}	
 	
@@ -943,9 +948,6 @@ function FacebookLogin ($fb_id,$fb_name,$fb_link) {
 	$first_query = "SELECT * FROM user WHERE facebook_id='$fb_id' AND status > -1"; 
 
 	$row = perform_query($first_query,SELECT);
-	if (!$row) {
-		return "-1^?".intext("Account disabled");
-	}
 	
 	if (($info = lockdown_button_check(SITEDOWN)) && $row->status != 5) {
 	   $sysinfo = explode("^?",$info);
@@ -1096,7 +1098,19 @@ function FacebookNewUser ($fb_id,$fb_name,$fb_link,$access_token) {
 			}   
 		}
         if ($references < $settings->fb_references_needed) {
-		    return "-1^?".intext("You do not have enough references to become a member of this site.  You must be Facebook friends with at least "). $settings->fb_references_needed . intext(" local members");
+			if ($settings->minimum_status_of_fb_reference == 0 || $settings->minimum_status_of_fb_reference == 1) {
+			   $extra = intext("local member(s)");
+			}
+			if ($settings->minimum_status_of_fb_reference == 2) {
+			   $extra = $settings->name_of_status_2 . "(s)";
+			}
+			if ($settings->minimum_status_of_fb_reference == 3) {
+			   $extra = intext("moderators(s)");
+			}		
+			if ($settings->minimum_status_of_fb_reference == 5) {
+			   $extra = intext("administrator(s)");
+			}		
+		    return "-1^?".intext("You do not have enough references to become a member of this site.  You must be Facebook friends with at least "). $settings->fb_references_needed . " " . $extra;
 		}
 	}	
 	
@@ -1189,7 +1203,7 @@ function housecleaning() {
 	}
 
 	//See if any timed bannings need to be lifted
-	$cur2 = perform_query("select * from ban where expires < now()",MULTISELECT);    	   
+	$cur2 = perform_query("select * from ban where (type = 'ban' or type = 'mute') and expires < now()",MULTISELECT);    	   
 	while ($row = mysql_fetch_array( $cur2 )) {
 			perform_query("delete from ban where user_id='" . $row["user_id"] . "'",DELETE); 		
 	}	
@@ -1327,14 +1341,9 @@ function housecleaning() {
 		perform_query("update user set prune_time=now() where user_id=0",UPDATE); 	  
 		
 		//See if any PTs need to be auto-deleted
-		$ptdelquery = "";
-		if ($settings->prune_old_pt != 0) {	
-			$ptdelquery = "select thread_id from thread where forum_id = 12 and "
-			. "\n DATE_ADD(tstamp,INTERVAL ".$settings->prune_old_pt." MONTH) < now()";
-		}	
-		
-		if ($ptdelquery) {
-			$cur7 = perform_query($ptdelquery, MULTISELECT);
+		if ($settings->prune_old_pt != 0) {
+			$cur7 = perform_query("select thread_id from thread where forum_id = 12 and "
+			. "\n DATE_ADD(tstamp,INTERVAL ".$settings->prune_old_pt." DAY) < now()", MULTISELECT);
 
 			while ($row = mysql_fetch_array( $cur7 )) {
 				$row3 = perform_query("select block_allow_list from thread where thread_id=".$row["thread_id"]);
@@ -2036,9 +2045,9 @@ function GetUserList($page, $filter){
 					$fb_li_id = $row["fb_li_id"];
 
 					if (!IsAdmin(Check_Auth())) {
-						$fb_li_id = preg_replace('/[0-9]{1,5}$/','?', $fb_li_id);
+						$fb_li_id = preg_replace('/[\S]{5}$/','?', $fb_li_id);
 					}
-					$username .= " / social media id: " . $fb_li_id;
+					$username .= " / ".intext("social media id").": " . $fb_li_id;
 
 			    }
 			    $user_list .= $row["ban_id"] . "^?-1^?" . $username . "^?";		
@@ -2051,7 +2060,7 @@ function GetUserList($page, $filter){
 				$count++;
 			}
 	    }
-	}
+	}  //27oP1ewLKP
 	if ($filter == "online") {	
 	    $do_sql = 0;
 		
@@ -2358,7 +2367,7 @@ function SetProfileText($user_id,$text) {
 	if ($len > $settings->profile_text_limit) {
 	   return "1^?".intext("Profile Updated (exceeded maximum length").", " . ($len - $settings->profile_text_limit) . " ".intext("characters were cut").")^?$ret_value"; 
 	} else {
-       return "1^?".intext("Profile Updated")."^?$ret_value";  
+       return "1^?".intext("Profile Updated");
 	}
 }
 
@@ -2986,6 +2995,9 @@ function PostMsg($user_id, $theinput, $thread_id, $force=0) {
 		}
 		
 		perform_query("update user set my_threads='" . $my_threads . "' where user_id=" . $user_id,UPDATE);
+		$extra = "";
+	} else {
+		$extra = "\n needs_approval = 1,";
 	}
 	
 	hyperlinks_check($theinput); 
@@ -2997,12 +3009,6 @@ function PostMsg($user_id, $theinput, $thread_id, $force=0) {
 	youtube_check($theinput);		
     image_links_check($theinput);	
 	make_spaces_check($theinput);
-
-	if (($status == 0 && ($row->forum_id != 12) && $settings->post_approval && ($force == 0)) || (($status == 0) && ($force == 0) && ($row->forum_id != 12) && lockdown_button_check(POSTAPPROVAL))) {
-	   $extra = "\n needs_approval = 1,";
-	} else {
-       $extra = "";
-    }
 	
 	$post_query = "insert post "
     		. "\n set "
@@ -3017,11 +3023,7 @@ function PostMsg($user_id, $theinput, $thread_id, $force=0) {
     		. "\n  author_name='" . mysql_real_escape_string($username) . "'";
 			
 	$post_id = perform_query($post_query, INSERT);	
-	
-	if (!($status == 0 && ($row->forum_id != 12) && $settings->post_approval && ($force == 0)) && !(($status == 0) && ($force == 0) && ($row->forum_id != 12) && lockdown_button_check(POSTAPPROVAL))) {
-       perform_query("update thread set num_posts=" . $num_posts . ",last_post_id_num='" . $post_id . "' where thread_id=" . $thread_id, UPDATE);
-    }
-	
+
 	foreach ($img_ret_val as $i) {
 	    perform_query("update file set post_id=" . $post_id . " where file_id=" . $i . " and post_id=0", UPDATE);
     }
@@ -3034,6 +3036,7 @@ function PostMsg($user_id, $theinput, $thread_id, $force=0) {
        return "-2^?".intext("Your post has been received and is pending approval");
     } else {
 	   perform_query("UPDATE user SET num_posts=num_posts+1 WHERE user_id=" . $userid, UPDATE); 
+	   perform_query("update thread set num_posts=" . $num_posts . ",last_post_id_num='" . $post_id . "' where thread_id=" . $thread_id, UPDATE);	  
 	   return $thread_id . "^?" . $num_posts . "^?" . $post_id . "^?";
 	}
 }

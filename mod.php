@@ -557,7 +557,7 @@ function UnMute($user_id) {
 function UnbanWiped($ban_id) {
 	perform_query("delete from ban where ban_id='$ban_id'",DELETE);
 	
-    return "1^?" . intext("Unbanned ban id $ban_id") . " delete from ban where ban_id='$ban_id'";
+    return "1^?" . intext("Unbanned ban id $ban_id");
 }
 
 function Ban($time,$user_id,$thread_id,$dupe_check) {

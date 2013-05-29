@@ -212,4 +212,8 @@ $language_hash["rejected"] = "text here";
 $language_hash["Your post has been received and is pending approval"] = "text here";
 $language_hash["Credits sent"] = "text here";
 $language_hash["No amount given"] = "text here";
+$language_hash["local member(s)"] = "text here";
+$language_hash["moderators(s)"] = "text here";
+$language_hash["administrator(s)"] = "text here";
+$language_hash["social media id"] = "text here";
 ?>

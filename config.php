@@ -185,6 +185,7 @@ $settings->bonus_credits = 1;
 $settings->max_credits = 3; //maximum number of credits a user may hold
 $settings->unlimited_credits = 5; //users with at least this status level have an unlimited number of credits
 $settings->deliver_credits = 5; //users with at least this status level can send any user credits
+
 //Miscellaneous Settings
 $settings->name_of_status_2 = "Star Member";  //This is the name of the status with a rank above "regular user" (1) but below "moderator" (3).  
 $settings->new_account_limit = 1;  //This to the maximum number of accounts that can be created from one IP address.  If you don't want a limit, set it to -1

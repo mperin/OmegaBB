@@ -275,6 +275,7 @@ language_hash["number of credits"] = "text here";
 language_hash["Send Credits"] = "text here";
 language_hash["From"] = "text here";
 language_hash["Gifts"] = "text here";
+language_hash["Wiped account.  Ban ID # "] = "text here";
 
 //the remaining messages are only seen when viewing the site settings
 language_hash["Place your cursor over the variable name for more information"] = "text here";
@@ -401,7 +402,7 @@ language_hash["If set, during LinkedIn authentication the user will be asked to 
 language_hash["Session rows that have been inactive for over a month will be deleted"] = "text here";
 language_hash["Closed threads will be deleted from the database after the number of days specified.  To never auto-delete "
 	+ "closed threads set it to -1.  Note: the system does this check once a week, so deletions won't happen exactly at the time specified"] = "text here";
-language_hash["Deletes old PTs after this many months of inactivity, set to 0 to never prune old PTs"] = "text here";
+language_hash["Deletes old PTs after this many days of inactivity, set to 0 to never prune old PTs"] = "text here";
 language_hash["Enable the first tab"] = "text here";
 language_hash["Name of first tab"] = "text here";
 language_hash["File that the first tab will load"] = "text here";

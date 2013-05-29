@@ -305,7 +305,7 @@ function show_tabs() {
 }
 
 function show_login_panel_horizontal(message) {
-	if (settings.new_accounts_allowed) {
+	if (settings.new_accounts_allowed && settings.connect_with_username && !settings.site_down) {
 	   var part1 = '<input class="rtbutton" type="button" onClick="javascript:show_new_account_entry()" name="sumbit" value="'+intext("Make New Account")+'">';
 	} else {
 	   var part1 = "";
@@ -355,7 +355,7 @@ function show_login_panel(message) {
     '</iframe>';
 	}	
 	
-	if ((settings.new_accounts_allowed) && (settings.connect_with_username)) {
+	if (settings.new_accounts_allowed && settings.connect_with_username && !settings.site_down) {
 	   html += intext('Or')+'<br><br><input class="rtbutton" type="button" onClick="javascript:show_new_account_entry()" name="submit" value="'+intext("Make New Account")+'"><br>';
 	   
 	   if ((settings.connect_with_fb) || (settings.connect_with_linkedin)) {
@@ -919,7 +919,7 @@ function get_thread_page(thread_id,offset,delay,mutex) {
        globals.post_mutex = 0
     }
 
-	set_display("top_area:inline","midrow:none","content_area:inline","inputdiv:none");
+	set_display("top_area:inline","midrow:none","content_area:inline","inputdiv:none","topbar:none");
 		
 	hide_footer();	
     $('content_area').innerHTML = '<div style="width:100%;max-width:1250px;padding-top:10%;font-size:22px;font-weight:bold;color:#bbb;text-align:center;"><img border="0" src="img/indicator.gif"> </div>';
@@ -2446,7 +2446,7 @@ function get_site_settings_response(originalRequest) {
 	helpline.set("prune_session_table",intext("Session rows that have been inactive for over six months will be deleted"));	
     helpline.set("prune_closed_threads",intext("Closed threads will be deleted from the database after the number of days specified.  To never auto-delete "
 	+ "closed threads set it to -1.  Note: the system does this check once a week, so deletions won't happen exactly at the time specified"));
-	helpline.set("prune_old_pt",intext("Deletes old PTs after this many months of inactivity, set to 0 to never prune old PTs"));
+	helpline.set("prune_old_pt",intext("Deletes old PTs after this many days of inactivity, set to 0 to never prune old PTs"));
 	helpline.set("first_tab_enabled",intext("Enable the first tab") );
 	helpline.set("first_tab_name",intext("Name of first tab"));
 	helpline.set("first_tab_location",intext("File that the first tab will load"));
@@ -4159,6 +4159,24 @@ function shrink_offsite_image(image_id) {
    $(image_id + "_eimg").innerHTML = content;
 }
 
+function load_ban_page(ban_id) {
+   $('profile_top').innerHTML = intext("Wiped account.  Ban ID # ") + ban_id;
+   $('inner_profile_content').innerHTML = "<a onclick=\"javascript:window.parent.unban_wiped_account("+ban_id+");\">Unban</a>";	
+}
+
+function unban_wiped_account(ban_id) {
+    var pars = "action=unbanwiped&data=" + ban_id;
+    var myAjax = new Ajax.Request("mod.php", {method: 'get', parameters: pars, onComplete: unban_wiped_account_response});
+}
+
+function unban_wiped_account_response(originalRequest)	{
+    var temp_string = originalRequest.responseText;
+    var temp_array = temp_string.split("^?");
+
+	alert(temp_array[1]);
+	jQuery.fancybox.close();
+}	
+
 function load_profile_page(user_id) {
     var pars = "user_id=" + user_id;
     var myAjax = new Ajax.Request("get_profile_info.php", {method: 'get', parameters: pars, onComplete: profile_page_response});
@@ -4332,7 +4350,7 @@ function profile_page_response(originalRequest)	{
 	}
 
 	if (status == -1) {
-		$('profile_top').innerHTML = "z<table border=0><tr><td><img src='"+settings.system_avatar+"'></td>" + 
+		$('profile_top').innerHTML = "<table border=0><tr><td><img src='"+settings.system_avatar+"'></td>" + 
 		"<td class='colmod'>&nbsp;<span class='profile_title'>"+username+"</span><br>&nbsp;&nbsp;&nbsp;"+intext("user id")+": "+user_id+"<br>"+
 		status_text+"<br>&nbsp;&nbsp;&nbsp;"+"</tr></table>";
 	} else {
