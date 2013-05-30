@@ -655,7 +655,7 @@ function GetSiteSettings() {
 	$count = 0;
 	foreach($settings as $key => $value) {
 	    if (($key == "fb_appId" || $key == "fb_secret"  || $key == "linkedin_api_key" || $key == "linkedin_secret_key" ) && (!IsAdmin(Check_Auth()))) {continue;}
-		if ($key == "server" || $key == "database" || $key == "user" || $key == "pass" || $key == "size_of_thread_title" || $key == "size_of_article_title" || $key == "size_of_pt_title") {continue;}
+		if ($key == "server" || $key == "database" || $key == "user" || $key == "pass" || $key == "size_of_thread_title" || $key == "size_of_article_title" || $key == "size_of_pt_title" || $key == "max_gift_msg_length") {continue;}
     	$count++;
 	    $return_value = $value; 
 		$datatype = gettype($value);
