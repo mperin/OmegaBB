@@ -1,9 +1,9 @@
 <?php
-/*OmegaBB*/
-header( 'Cache-control: no-cache' );
-header( 'Cache-control: no-store' );
-header( 'Pragma: no-cache' );
-header( 'Expires: 0' ); 
+	/*OmegaBB 0.9.3*/
+	header( 'Cache-control: no-cache' );
+	header( 'Cache-control: no-store' );
+	header( 'Pragma: no-cache' );
+	header( 'Expires: 0' ); 
 
     include('omegabb.php');
 	global $settings;

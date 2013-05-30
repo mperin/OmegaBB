@@ -1,5 +1,5 @@
 <?php
-	/*OmegaBB*/
+	/*OmegaBB 0.9.3*/
     include('config.php');
 	include('common.php');
 ?>

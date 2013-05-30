@@ -217,8 +217,8 @@ table#bottomrow td { border:medium none; padding:5px; }
 	height:30px; 
 	line-height:42px;
 	text-align: center;
-    border-left: 4px solid %%back_tab_color%%;
-	border-right: 4px solid %%back_tab_color%%;
+    border-left: 6px solid %%back_tab_color%%;
+	border-right: 6px solid %%back_tab_color%%;
 }
 .tabselected {
     display:table-cell;
@@ -228,8 +228,8 @@ table#bottomrow td { border:medium none; padding:5px; }
 	height:30px; 
 	line-height:42px;
 	text-align: center;
-    border-left: 4px solid %%back_tab_color%%;
-	border-right: 4px solid %%back_tab_color%%;	
+    border-left: 6px solid %%back_tab_color%%;
+	border-right: 6px solid %%back_tab_color%%;	
 }
 .filled {
     width:100%;

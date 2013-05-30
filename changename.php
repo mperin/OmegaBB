@@ -1,5 +1,5 @@
 <?php
-	/*OmegaBB*/
+	/*OmegaBB 0.9.3*/
     include('omegabb.php');
 	
     $newusername=GetParam($_REQUEST,'newusername',1);

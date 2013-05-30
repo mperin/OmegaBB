@@ -1,5 +1,5 @@
 <?php
-/*OmegaBB*/
+	/*OmegaBB 0.9.3*/
     include('omegabb.php');
 
 	$user_id=GetParam($_REQUEST,'user_id','');

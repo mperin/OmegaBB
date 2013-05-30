@@ -1,5 +1,5 @@
 <?php
-	/*OmegaBB*/
+	/*OmegaBB 0.9.3*/
     include('omegabb.php');
 	
     $oldpass=GetParam($_REQUEST,'oldpass',2);

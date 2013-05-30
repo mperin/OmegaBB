@@ -217,8 +217,8 @@ table#bottomrow td { border:medium none; padding:5px; }
 	height:30px; 
 	line-height:42px;
 	text-align: center;
-    border-left: 4px solid #144582;
-	border-right: 4px solid #144582;
+    border-left: 6px solid #144582;
+	border-right: 6px solid #144582;
 }
 .tabselected {
     display:table-cell;
@@ -228,8 +228,8 @@ table#bottomrow td { border:medium none; padding:5px; }
 	height:30px; 
 	line-height:42px;
 	text-align: center;
-    border-left: 4px solid #144582;
-	border-right: 4px solid #144582;	
+    border-left: 6px solid #144582;
+	border-right: 6px solid #144582;	
 }
 .filled {
     width:100%;

@@ -1,5 +1,5 @@
 <?php
-/*OmegaBB*/
+/*OmegaBB 0.9.3*/
 
 //initialization routine and a collection of commonly used functions
 

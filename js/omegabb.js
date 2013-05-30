@@ -1,5 +1,5 @@
 /* 
-%%fulltitle%% Copyright (c) 2013, Ryan Smiderle.  All rights reserved.
+OmegaBB 0.9.3 (build 223) Copyright (c) 2013, Ryan Smiderle.  All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted
 provided that the following conditions are met:

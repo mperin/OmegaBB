@@ -1,5 +1,5 @@
 <?php
-/*OmegaBB*/
+/*OmegaBB 0.9.3*/
 @$ftmp = $_FILES['avatar']['tmp_name'];
 @$oname = $_FILES['avatar']['name'];
 @$fname = $_FILES['avatar']['name'];

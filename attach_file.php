@@ -1,5 +1,5 @@
 <?php
-/*OmegaBB*/
+/*OmegaBB 0.9.3*/
 @$ftmp = $_FILES['file']['tmp_name'];
 @$oname = $_FILES['file']['name'];
 @$fname = $_FILES['file']['name'];

@@ -1,5 +1,5 @@
 <?php
-/*OmegaBB*/
+/*OmegaBB 0.9.3*/
 
 //a collection of miscellaneous functions moved into their own source file to reduce memory usage
  

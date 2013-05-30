@@ -1,5 +1,5 @@
 
-OmegaBB developmental version - build 222
+OmegaBB 0.9.3 (build 223)
 ====================================
 
 OmegaBB is a message board which features a fast interface, real-time notification when
@@ -10,7 +10,7 @@ Webpage: http://www.omegabb.com
 See the file INSTALL on how to get OmegaBB running on your server.
 
 
-Changes in developmental version
+Changes in version 0.9.3 (May 30, 2013)
 
 - gifts
 - option to need moderator approval from postings by new users
@@ -131,7 +131,7 @@ Changes in version 0.3
 
 License:
 
-OmegaBB developmental version - build 222  Copyright (c) 2013, Ryan Smiderle.  All rights reserved.
+OmegaBB 0.9.3 (build 223)  Copyright (c) 2013, Ryan Smiderle.  All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted
 provided that the following conditions are met:
