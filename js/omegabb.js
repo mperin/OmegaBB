@@ -3230,8 +3230,12 @@ function get_user_list_response(originalRequest) {
    for (var i = 0; i < count; i++) {
       offset = 4 + (i * 3);
 	  if (temp_array[offset+1] == -1) {
-		  user_list += '<tr> <td class="coluserlistone">' + temp_array[offset+1] + 
-		   '</td> <td class="coluserlisttwo">' + '<a href="profile.php?ban_id='+ temp_array[offset]  +'" id="profile_box'+i+'">' + temp_array[offset+2] + '</a></td></tr>';  
+	      if (account_info.status == 5) {
+			  user_list += '<tr> <td class="coluserlistone">' + temp_array[offset+1] +
+			   '</td> <td class="coluserlisttwo">' + '<a href="profile.php?ban_id='+ temp_array[offset]  +'" id="profile_box'+i+'">' + temp_array[offset+2] + '</a></td></tr>';
+		  } else {
+			  user_list += '<tr> <td class="coluserlistone">' + temp_array[offset+1] + '</td> <td class="coluserlisttwo">' + temp_array[offset+2] + '</td></tr>';
+          }
 	  } else {
 		  user_list += '<tr> <td class="coluserlistone">' + temp_array[offset+1] + 
 		   '</td> <td class="coluserlisttwo">' + '<a href="profile.php?user_id='+ temp_array[offset+1]  +'" id="profile_box'+i+'">' + temp_array[offset+2] + '</a></td></tr>';
